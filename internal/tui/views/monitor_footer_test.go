@@ -4,7 +4,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pedrobelmino/tui-sdd-open-api/internal/gpu"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/system"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/tokens"
@@ -13,20 +12,16 @@ import (
 func TestRenderMonitorFooter_SingleLineSummary(t *testing.T) {
 	t.Setenv("NO_COLOR", "1")
 	out := RenderMonitorFooter(FooterMonitorData{
-		Width: 120, ConfiguredModel: "qwen2.5-coder:3b",
+		Width: 120, ConfiguredModel: "deepseek-v4-flash",
 		Ollama: ollama.Snapshot{
 			Reachable: true,
 			Running: []ollama.RunningModel{{
-				Name: "qwen2.5-coder:3b", SizeVRAM: 2408937472,
+				Name: "deepseek-v4-flash", SizeVRAM: 2408937472,
 			}},
 		},
-		GPU: gpu.Snapshot{
-			Available: true,
-			Devices: []gpu.Device{{
-				Vendor: gpu.VendorAMD, Utilization: 55, MemoryUsed: 3456, MemoryTotal: 4096, Temperature: 62,
-			}},
-		},
-		Tokens: tokens.SessionCounter{PromptTokens: 1200, CompletionTokens: 800, RequestCount: 3},
+		Tokens:          tokens.SessionCounter{PromptTokens: 1200, CompletionTokens: 800, RequestCount: 3},
+		WindowWidth:     120,
+		WindowHeight:    40,
 		System: system.Snapshot{
 			Available: true,
 			CPU:       system.CPUInfo{Utilization: 33, HasBaseline: true},
@@ -48,8 +43,8 @@ func TestRenderMonitorFooter_SingleLineSummary(t *testing.T) {
 	}
 
 	for _, want := range []string{
-		"qwen2.5-coder:3b",
-		"GPU AMD 55%",
+		"deepseek-v4-flash",
+		"Win 120×40",
 		"Tok 1.2k+800",
 		"CPU 33%",
 		"MEM 45%",
@@ -65,8 +60,9 @@ func TestFormatFooterMonitorLine_UsesSingleLine(t *testing.T) {
 	line := formatFooterMonitorLine(FooterMonitorData{
 		Width: 100,
 		Ollama: ollama.Snapshot{Reachable: true, Running: []ollama.RunningModel{{Name: "phi3:mini"}}},
-		GPU:    gpu.Snapshot{Available: true, Devices: []gpu.Device{{Vendor: gpu.VendorAMD, Utilization: 10, MemoryUsed: 100, MemoryTotal: 4000}}},
-		Tokens: tokens.SessionCounter{},
+		Tokens:          tokens.SessionCounter{},
+		WindowWidth:     80,
+		WindowHeight:    24,
 		System: system.Snapshot{Available: true, CPU: system.CPUInfo{HasBaseline: true, Utilization: 5}, Memory: system.MemoryInfo{TotalMiB: 8000, UsedMiB: 2000}, Load: system.LoadAvg{One: 0.1}},
 	})
 	if strings.Count(line, "\n") > 0 {

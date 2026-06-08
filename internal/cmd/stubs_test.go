@@ -66,7 +66,7 @@ func TestSpecify_RequiresProject(t *testing.T) {
 
 	resetRootArgs("specify", "myfeature", "--brief", "test")
 	err := rootCmd.Execute()
-	if err == nil || !strings.Contains(err.Error(), "tsll init") {
+	if err == nil || !strings.Contains(err.Error(), "sdd-open-api init") {
 		t.Fatalf("expected project error, got %v", err)
 	}
 }
@@ -76,7 +76,7 @@ func TestTasks_RequiresProject(t *testing.T) {
 
 	resetRootArgs("tasks", "myfeature")
 	err := rootCmd.Execute()
-	if err == nil || !strings.Contains(err.Error(), "tsll init") {
+	if err == nil || !strings.Contains(err.Error(), "sdd-open-api init") {
 		t.Fatalf("expected project error, got %v", err)
 	}
 }
@@ -86,7 +86,7 @@ func TestImplement_RequiresProject(t *testing.T) {
 
 	resetRootArgs("implement", "myfeature")
 	err := rootCmd.Execute()
-	if err == nil || !strings.Contains(err.Error(), "tsll init") {
+	if err == nil || !strings.Contains(err.Error(), "sdd-open-api init") {
 		t.Fatalf("expected project error, got %v", err)
 	}
 }
@@ -96,7 +96,7 @@ func TestDesign_RequiresProject(t *testing.T) {
 
 	resetRootArgs("design", "myfeature")
 	err := rootCmd.Execute()
-	if err == nil || !strings.Contains(err.Error(), "tsll init") {
+	if err == nil || !strings.Contains(err.Error(), "sdd-open-api init") {
 		t.Fatalf("expected project error, got %v", err)
 	}
 }
@@ -106,7 +106,7 @@ func TestRun_RequiresProject(t *testing.T) {
 
 	resetRootArgs("run", "myfeature", "--task", "T1")
 	err := rootCmd.Execute()
-	if err == nil || !strings.Contains(err.Error(), "tsll init") {
+	if err == nil || !strings.Contains(err.Error(), "sdd-open-api init") {
 		t.Fatalf("expected project error, got %v", err)
 	}
 }

@@ -81,7 +81,7 @@ func FeaturesFooter() string {
 // HelpOverlay returns full help text.
 func HelpOverlay() string {
 	lines := []string{
-		"tsll — keyboard shortcuts",
+		"sdd-open-api — keyboard shortcuts",
 		"",
 		"  Global",
 		"  q / ctrl+c   quit",

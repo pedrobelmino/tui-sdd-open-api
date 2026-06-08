@@ -345,7 +345,7 @@ func (s *Service) Implement(ctx context.Context, projectRoot, feature string, on
 	statePath := filepath.Join(projectRoot, ".specs/project/STATE.md")
 	_ = state.UpdateCurrentWork(statePath, feature+" — implemented")
 	_ = state.AppendDecision(statePath, "Feature "+feature+" implemented",
-		"Completed via tsll implement", truncate(out, 200))
+		"Completed via sdd-open-api implement", truncate(out, 200))
 	return usage, nil
 }
 
@@ -415,7 +415,7 @@ func (s *Service) runTaskWithContext(ctx context.Context, projectRoot string, fc
 	}
 	statePath := filepath.Join(projectRoot, ".specs/project/STATE.md")
 	_ = state.UpdateCurrentWork(statePath, fc.Feature+" — "+taskID+" executed")
-	_ = state.AppendDecision(statePath, "Task "+taskID+" executed", truncate(out, 200), "tsll run from TUI/CLI")
+	_ = state.AppendDecision(statePath, "Task "+taskID+" executed", truncate(out, 200), "sdd-open-api run from TUI/CLI")
 
 	return usage, nil
 }
@@ -582,7 +582,7 @@ func buildImplementUserMsg(projectRoot string, fc featureContext, taskBlock stri
 	b.WriteString("Feature slug: " + fc.Feature + "\n")
 	b.WriteString("Feature spec directory: .specs/features/" + fc.Feature + "/\n")
 	b.WriteString("IMPORTANT: The feature slug is \"" + fc.Feature + "\" — NOT requirement IDs from spec.md (e.g. FEAT-01).\n")
-	b.WriteString("tsll updates .specs/features/" + fc.Feature + "/tasks.md automatically — NEVER write or edit anything under .specs/.\n")
+	b.WriteString("sdd-open-api updates .specs/features/" + fc.Feature + "/tasks.md automatically — NEVER write or edit anything under .specs/.\n")
 	if fc.ProjectStack != "" {
 		b.WriteString("\n## Project tech stack (AUTHORITATIVE — override conflicting design.md frameworks)\n\n")
 		b.WriteString(fc.ProjectStack + "\n")

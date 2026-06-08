@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/pedrobelmino/tui-sdd-open-api/internal/gpu"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/system"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/tokens"
@@ -17,11 +16,12 @@ const (
 	footerMonitorLines = 3 // title row + 1 content line + bottom border
 )
 
-// FooterMonitorData is a single-line Metrics+System summary for the features footer.
+// FooterMonitorData is a single-line metadata + system summary for the features footer.
 type FooterMonitorData struct {
 	Width           int
+	WindowWidth     int
+	WindowHeight    int
 	Ollama          ollama.Snapshot
-	GPU             gpu.Snapshot
 	Tokens          tokens.SessionCounter
 	System          system.Snapshot
 	ConfiguredModel string
@@ -39,7 +39,7 @@ func RenderMonitorFooter(d FooterMonitorData) string {
 func formatFooterMonitorLine(d FooterMonitorData) string {
 	segments := []string{
 		compactModelSegment(d.Ollama, d.ConfiguredModel),
-		compactGPUSegment(d.GPU),
+		compactMetadataSegment(d),
 		compactTokensSegment(d.Tokens),
 		compactSystemSegment(d.System),
 	}
@@ -64,17 +64,8 @@ func compactModelSegment(snap ollama.Snapshot, configured string) string {
 	return "Model ● " + snap.Running[0].Name
 }
 
-func compactGPUSegment(snap gpu.Snapshot) string {
-	if !snap.Available || len(snap.Devices) == 0 {
-		return "GPU —"
-	}
-	d := snap.Devices[0]
-	tag := strings.ToUpper(string(d.Vendor))
-	if tag == "" {
-		tag = "GPU"
-	}
-	return fmt.Sprintf("GPU %s %.0f%% %d/%dMiB %.0f°C",
-		tag, d.Utilization, d.MemoryUsed, d.MemoryTotal, d.Temperature)
+func compactMetadataSegment(d FooterMonitorData) string {
+	return fmt.Sprintf("Win %d×%d", d.WindowWidth, d.WindowHeight)
 }
 
 func compactTokensSegment(c tokens.SessionCounter) string {

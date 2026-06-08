@@ -134,7 +134,7 @@ Rules:
 - If read_file returns ERROR (file not found): use write_file to create the file (greenfield) or list_dir on the parent.
 - Do NOT stop after one file. Do NOT output JSON {"summary":...} until ALL required code for the task exists.
 - write_file: args.content MUST contain the complete file body as a string — never empty, never 0 bytes.
-- NEVER write/edit/delete/create under .specs/ — spec, design, and tasks.md are managed by tsll, not by file tools.
+- NEVER write/edit/delete/create under .specs/ — spec, design, and tasks.md are managed by sdd-open-api, not by file tools.
 - Requirement IDs (FEAT-01, AUTH-02) are labels inside spec.md — they are NOT feature folder names.
 - After ALL required changes are done: write a plain-text summary (no tool call tag, no JSON).
 
@@ -165,7 +165,7 @@ Rules:
 - PLAN FIRST: <file_plan> listing all paths, then write_file each path exactly ONCE with full content.
 - Prefer write_file over edit_file. Never write or read the same path twice in one task.
 - write_file: args.content MUST contain the complete file body as a string — never empty, never 0 bytes.
-- NEVER write/edit/delete/create under .specs/ — tsll updates tasks.md in the feature folder automatically.
+- NEVER write/edit/delete/create under .specs/ — sdd-open-api updates tasks.md in the feature folder automatically.
 - Requirement IDs (FEAT-01) are NOT paths — use the feature slug from the user message (e.g. landing-page).
 - After ALL changes are done: write a plain-text summary (no tool call tag, no JSON).
 

@@ -36,7 +36,7 @@ func RenderOverview(d OverviewData) string {
 func overviewContent(d OverviewData) string {
 	switch {
 	case d.Corrupted:
-		return "! corrupted project\nRun: tsll init --force"
+		return "! corrupted project\nRun: sdd-open-api init --force"
 	case !d.Valid:
 		return "No .specs/project/ found\n\nPress i to init project"
 	default:

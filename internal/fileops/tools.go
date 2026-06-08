@@ -142,7 +142,7 @@ func execute(projectRoot, toolName string, args map[string]any) (string, error) 
 func isSpecsMutationBlocked(rel string) error {
 	clean := filepath.ToSlash(filepath.Clean(rel))
 	if clean == ".specs" || strings.HasPrefix(clean, ".specs/") {
-		return fmt.Errorf("cannot modify %s — .specs/ is managed by tsll (specify/design/tasks/implement). Task status is updated automatically in .specs/features/<feature-slug>/tasks.md", rel)
+		return fmt.Errorf("cannot modify %s — .specs/ is managed by sdd-open-api (specify/design/tasks/implement). Task status is updated automatically in .specs/features/<feature-slug>/tasks.md", rel)
 	}
 	return nil
 }

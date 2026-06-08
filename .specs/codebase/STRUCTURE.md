@@ -6,7 +6,7 @@
 
 ```
 tui-sdd-open-api/
-├── cmd/tsll/                 # Entry point
+├── cmd/sdd-open-api/                 # Entry point
 ├── internal/
 │   ├── cmd/                 # Cobra commands
 │   ├── tui/                 # Bubble Tea dashboard
@@ -34,7 +34,7 @@ tui-sdd-open-api/
 
 ## Module Organization
 
-### Entry (`cmd/tsll/`)
+### Entry (`cmd/sdd-open-api/`)
 
 **Purpose:** Minimal `main()` delegating to `internal/cmd.Execute()`
 **Key files:** `main.go`

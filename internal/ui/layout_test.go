@@ -20,10 +20,10 @@ func testTabs() []Tab {
 
 func TestHeader_Snapshot80Cols(t *testing.T) {
 	t.Setenv("NO_COLOR", "1")
-	got := Header("tsll v0.1.0 ── tui-sdd-open-api ── qwen2.5-coder", testTabs(), 0, testWidth)
+	got := Header("sdd-open-api v0.1.0 ── tui-sdd-open-api ── qwen2.5-coder", testTabs(), 0, testWidth)
 
 	want := strings.Join([]string{
-		"┌─ tsll v0.1.0 ── tui-sdd-open-api ── qwen2.5-coder ───────────────────────────┐",
+		"┌─ sdd-open-api v0.1.0 ── tui-sdd-open-api ── qwen2.5-coder ───────────────────┐",
 		"│ [1] Overview  [2] Features  [3] Models  [4] Metrics                          │",
 	}, "\n")
 
@@ -34,7 +34,7 @@ func TestHeader_Snapshot80Cols(t *testing.T) {
 
 func TestHeader_ActiveTabSnapshot(t *testing.T) {
 	t.Setenv("NO_COLOR", "1")
-	got := Header("tsll", testTabs(), 2, testWidth)
+	got := Header("sdd-open-api", testTabs(), 2, testWidth)
 	if !strings.Contains(got, "[3] Models") {
 		t.Fatalf("expected active tab in output, got:\n%s", got)
 	}

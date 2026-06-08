@@ -478,7 +478,7 @@ func (m RootModel) loadFeatureTasksCmd(feature string) tea.Cmd {
 
 func (m RootModel) startAction(kind ActionKind, feature, brief, taskID, prompt string) (RootModel, tea.Cmd) {
 	if !m.project.Valid {
-		m.statusMsg = "run tsll init first"
+		m.statusMsg = "run sdd-open-api init first"
 		return m, nil
 	}
 	// Cancel any previous action still running.

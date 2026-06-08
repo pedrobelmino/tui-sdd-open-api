@@ -118,7 +118,7 @@ func TestModel_InitOpensForm(t *testing.T) {
 func TestModel_InitWhenProjectValid(t *testing.T) {
 	m := newTestModel()
 	m.activeView = ViewOverview
-	m.project = project.ProjectContext{Valid: true, Root: "/tmp/tsll"}
+	m.project = project.ProjectContext{Valid: true, Root: "/tmp/sdd-open-api"}
 	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'i'}})
 	m2 := updated.(RootModel)
 	if m2.statusMsg == "" {
@@ -203,7 +203,7 @@ func TestModel_ActionScreenShowsFooterMonitor(t *testing.T) {
 	out := m.View()
 	// New title format: "⠋ spec: landing-page · <phase>"
 	for _, want := range []string{
-		"Monitor", "qwen2.5-coder:3b", "GPU AMD 40%", "CPU 22%", "MEM 50%", "Ld 1.2",
+		"Monitor", "qwen2.5-coder:3b", "Win 100×30", "CPU 22%", "MEM 50%", "Ld 1.2",
 		"spec: landing-page",
 	} {
 		if !strings.Contains(out, want) {
@@ -234,7 +234,7 @@ func TestModel_FeaturesViewShowsFooterMonitor(t *testing.T) {
 	}
 
 	out := m.View()
-	for _, want := range []string{"Monitor", "phi3", "GPU AMD", "Tok 500+200", "CPU 15%", "MEM 40%"} {
+	for _, want := range []string{"Monitor", "phi3", "Win 100×30", "Tok 500+200", "CPU 15%", "MEM 40%"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("features view missing %q:\n%s", want, out)
 		}

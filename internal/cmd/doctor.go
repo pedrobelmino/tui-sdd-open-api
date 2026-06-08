@@ -19,7 +19,7 @@ var doctorCmd = &cobra.Command{
 		cfg := loadCfg()
 		ok := true
 
-		fmt.Fprintln(os.Stderr, "tsll doctor")
+		fmt.Fprintln(os.Stderr, "sdd-open-api doctor")
 		fmt.Fprintln(os.Stderr, stringsRepeat("─", 40))
 
 		if cfg.Provider == "openapi" {
@@ -69,7 +69,7 @@ var doctorCmd = &cobra.Command{
 		if ctx, err := project.RequireRoot(); err == nil {
 			printOK(".specs/project at " + ctx.Root)
 		} else {
-			fmt.Fprintln(os.Stderr, "⚠ not inside a tsll project (tsll init)")
+			fmt.Fprintln(os.Stderr, "⚠ not inside an sdd-open-api project (sdd-open-api init)")
 		}
 
 		fmt.Fprintf(os.Stderr, "\nConfig: model=%s gpu_prefer=%s\n", cfg.Model, cfg.GPUPrefer)

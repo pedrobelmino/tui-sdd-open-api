@@ -18,7 +18,7 @@ A TUI segue **Elm Architecture** (Bubble Tea): um `RootModel` roteia mensagens, 
 
 ```mermaid
 graph TB
-    subgraph Entry["cmd/tsll"]
+    subgraph Entry["cmd/sdd-open-api"]
         MAIN[main.go]
     end
 
@@ -126,7 +126,7 @@ sequenceDiagram
 
 ```
 tui-sdd-open-api/
-├── cmd/tsll/
+├── cmd/sdd-open-api/
 │   └── main.go                 # entry; chama cmd.Execute()
 ├── internal/
 │   ├── cmd/

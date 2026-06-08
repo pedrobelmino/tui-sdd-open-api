@@ -103,7 +103,7 @@
 **Decision:** Projeto renomeado; binário/comando `tsll`; módulo `github.com/pedrobelmino/tui-sdd-open-api`; config `~/.tsll/`
 **Reason:** Publicação no GitHub do autor; nome descritivo (TUI + spec-driven + LLM local)
 **Trade-off:** Breaking change para quem usava `bel` / `~/.bel/` / `BEL_*`
-**Impact:** `cmd/tsll/`, README.md, AGENTS.md, imports Go, env `TSLL_*`
+**Impact:** `cmd/sdd-open-api/`, README.md, AGENTS.md, imports Go, env `TSLL_*`
 
 ### AD-014: Scroll no painel Action durante streaming (2026-06-07)
 

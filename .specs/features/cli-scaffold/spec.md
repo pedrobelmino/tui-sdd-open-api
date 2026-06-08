@@ -76,7 +76,7 @@ O tui-sdd-open-api ainda não existe como binário executável. O dev solo preci
 
 **Acceptance Criteria**:
 
-1. WHEN o repositório é clonado THEN o sistema SHALL conter `cmd/tsll/main.go`, `internal/tui/` e `internal/cmd/`
+1. WHEN o repositório é clonado THEN o sistema SHALL conter `cmd/sdd-open-api/main.go`, `internal/tui/` e `internal/cmd/`
 2. WHEN `tsll` é invocado sem subcomando THEN Cobra SHALL delegar para `internal/tui.Run()`
 3. WHEN `tsll --version` ou `tsll init` são invocados THEN Cobra SHALL executar subcomando sem iniciar TUI
 4. WHEN `go build ./...` é executado THEN o sistema SHALL compilar sem erros
@@ -164,12 +164,12 @@ O tui-sdd-open-api ainda não existe como binário executável. O dev solo preci
 
 **Acceptance Criteria**:
 
-1. WHEN `make build` THEN o sistema SHALL gerar `bin/tsll` para Linux amd64
+1. WHEN `make build` THEN o sistema SHALL gerar `bin/sdd-open-api` para Linux amd64
 2. WHEN `make install` THEN o sistema SHALL copiar para `$(GOBIN)` ou `~/go/bin`
 3. WHEN `make test` THEN o sistema SHALL rodar `go test ./...`
 4. WHEN `make clean` THEN o sistema SHALL remover `bin/`
 
-**Independent Test**: `make build && ./bin/tsll --version`.
+**Independent Test**: `make build && ./bin/sdd-open-api --version`.
 
 ---
 

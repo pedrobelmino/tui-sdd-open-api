@@ -45,7 +45,7 @@ var validateCmd = &cobra.Command{
 		if !allOK {
 			return fmt.Errorf("validation failed for %s", feature)
 		}
-		fmt.Fprintln(os.Stderr, "\nValidation passed. Run tasks manually or via tsll run.")
+		fmt.Fprintln(os.Stderr, "\nValidation passed. Run tasks manually or via sdd-open-api run.")
 		return nil
 	},
 }

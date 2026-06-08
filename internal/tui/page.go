@@ -80,7 +80,8 @@ func (m RootModel) composePage(main, footer string, w, h int) string {
 
 	if !m.isFeaturesContext() {
 		parts = append(parts, views.RenderMonitorStrip(views.MonitorData{
-			Width: w, Ollama: m.ollama, GPU: m.gpu, Tokens: m.tokens,
+			Width: w, Ollama: m.ollama, Tokens: m.tokens,
+			WindowWidth: m.width, WindowHeight: m.height,
 			ConfiguredModel: m.cfg.Model,
 		}))
 	}
@@ -89,7 +90,8 @@ func (m RootModel) composePage(main, footer string, w, h int) string {
 
 	if m.isFeaturesContext() {
 		parts = append(parts, views.RenderMonitorFooter(views.FooterMonitorData{
-			Width: w, Ollama: m.ollama, GPU: m.gpu, Tokens: m.tokens, System: m.system,
+			Width: w, Ollama: m.ollama, Tokens: m.tokens, System: m.system,
+			WindowWidth: m.width, WindowHeight: m.height,
 			ConfiguredModel: m.cfg.Model,
 		}))
 	}

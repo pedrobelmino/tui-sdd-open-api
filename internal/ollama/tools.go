@@ -375,7 +375,7 @@ func (c *genClient) ChatWithTools(
 					if snippet != "" {
 						emit(onChunk, "   model output: %s", snippet)
 					}
-					emit(onChunk, "Hint: escape newlines as \\n inside JSON, or run one task: tsll run <feature> <task>")
+					emit(onChunk, "Hint: escape newlines as \\n inside JSON, or run one task: sdd-open-api run <feature> <task>")
 					return "", totalUsage, fmt.Errorf("malformed tool-call JSON loop (%d attempts)", malformedStreak)
 				}
 				history = append(history,
@@ -581,9 +581,9 @@ func (c *genClient) ChatWithTools(
 
 	emit(onChunk, "✗ tool-calling loop exceeded %d iterations (%d file(s) written)", loopLimit, filesWritten)
 	if filesWritten > 0 {
-		emit(onChunk, "Hint: partial progress saved — retry the same task: tsll run <feature> <task>")
+		emit(onChunk, "Hint: partial progress saved — retry the same task: sdd-open-api run <feature> <task>")
 	} else {
-		emit(onChunk, "Hint: model may be stuck on empty dirs or directory read_file. Split into smaller tasks (tsll run) or retry implement.")
+		emit(onChunk, "Hint: model may be stuck on empty dirs or directory read_file. Split into smaller tasks (sdd-open-api run) or retry implement.")
 	}
 	return "", totalUsage, fmt.Errorf("tool-calling loop exceeded %d iterations", loopLimit)
 }
@@ -768,7 +768,7 @@ func recordToolFailure(
 	if *sameFailStreak > maxSameFailStreak {
 		msg := fmt.Sprintf("stuck: repeated failing tool call (%s)", formatToolInvocation(tc))
 		emit(onChunk, "✗ %s", msg)
-		emit(onChunk, "Hint: split work with tsll run <feature> <task>, or retry with a smaller scope.")
+		emit(onChunk, "Hint: split work with sdd-open-api run <feature> <task>, or retry with a smaller scope.")
 		return true, fmt.Errorf("%s", msg)
 	}
 	return false, nil
@@ -1265,7 +1265,7 @@ func preflightToolBlock(tc toolCallJSON, st loopPreflightState) (bool, string) {
 	normPath := strings.ReplaceAll(strings.Trim(path, "/"), "\\", "/")
 	if tc.Tool == "write_file" || tc.Tool == "edit_file" || tc.Tool == "delete_file" || tc.Tool == "create_dir" {
 		if normPath == ".specs" || strings.HasPrefix(normPath, ".specs/") {
-			return true, "NEVER write under .specs/ — tsll manages spec/design/tasks automatically. " +
+			return true, "NEVER write under .specs/ — sdd-open-api manages spec/design/tasks automatically. " +
 				"Implement SOURCE files in src/ or public/ only. Task IDs (T3) and numbers are NOT spec file paths."
 		}
 	}

@@ -66,7 +66,7 @@ go test ./internal/ollama/ -run TestChatStream
 
 | Code Layer | Required Test Type | Location Pattern | Run Command | Current State |
 | ---------- | ------------------ | ---------------- | ----------- | ------------- |
-| Entry `cmd/tsll` | none (thin) | `cmd/tsll/main.go` | — | No tests |
+| Entry `cmd/sdd-open-api` | none (thin) | `cmd/sdd-open-api/main.go` | — | No tests |
 | CLI commands | unit + stub | `internal/cmd/*_test.go` | `go test ./internal/cmd/...` | Partial (`root_test`, `stubs_test`) |
 | TUI model | unit | `internal/tui/model_test.go` | `go test ./internal/tui/...` | Good |
 | TUI views | snapshot unit | `internal/tui/views/*_test.go` | `go test ./internal/tui/views/...` | Good |

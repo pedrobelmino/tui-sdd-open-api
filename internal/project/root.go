@@ -16,7 +16,7 @@ func RequireRoot() (ProjectContext, error) {
 		return ProjectContext{}, err
 	}
 	if !ctx.Valid {
-		return ProjectContext{}, fmt.Errorf("not a tsll project — run tsll init first")
+		return ProjectContext{}, fmt.Errorf("not an sdd-open-api project — run sdd-open-api init first")
 	}
 	return ctx, nil
 }

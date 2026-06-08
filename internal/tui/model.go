@@ -423,7 +423,7 @@ func (m RootModel) headerTitle() string {
 	} else if len(m.ollama.Running) > 0 {
 		model = m.ollama.Running[0].Name
 	}
-	title := fmt.Sprintf("tsll %s ── %s ── %s", m.version, proj, model)
+	title := fmt.Sprintf("sdd-open-api %s ── %s ── %s", m.version, proj, model)
 	if mini := systemMiniLine(m.system); mini != "" {
 		title += " ── " + mini
 	}
@@ -491,7 +491,9 @@ func (m RootModel) renderBody(width, height int) string {
 		})
 	case ViewMetrics:
 		return views.RenderMetrics(views.MetricsData{
-			Width: width, Height: height, Tokens: m.tokens, GPU: m.gpu,
+			Width: width, Height: height, Tokens: m.tokens,
+			WindowWidth: m.width, WindowHeight: m.height,
+			ConfiguredModel: m.cfg.Model,
 		})
 	case ViewSystem:
 		return views.RenderSystem(views.SystemData{

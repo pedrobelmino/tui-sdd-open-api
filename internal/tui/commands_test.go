@@ -17,7 +17,7 @@ func TestLoadProjectCmd_ReturnsProjectLoadedMsg(t *testing.T) {
 
 	loadProjectFn = func() tea.Msg {
 		return ProjectLoadedMsg{
-			Ctx: project.ProjectContext{Valid: true, Root: "/tmp/tsll"},
+			Ctx: project.ProjectContext{Valid: true, Root: "/tmp/sdd-open-api"},
 		}
 	}
 

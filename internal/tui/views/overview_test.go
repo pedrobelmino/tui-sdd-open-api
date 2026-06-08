@@ -13,7 +13,7 @@ func TestRenderOverview_ValidProjectSnapshot(t *testing.T) {
 	got := RenderOverview(OverviewData{
 		Width:       overviewTestWidth,
 		Height:      24,
-		Root:        "/home/pedro/dev/tsll",
+		Root:        "/home/pedro/dev/sdd-open-api",
 		Valid:       true,
 		CurrentWork: "cli-scaffold",
 		Milestone:   "M1",
@@ -21,7 +21,7 @@ func TestRenderOverview_ValidProjectSnapshot(t *testing.T) {
 
 	want := strings.Join([]string{
 		"   ╭─ Project ────────────────────────╮",
-		"   │ ✓ /home/pedro/dev/tsll           │",
+		"   │ ✓ /home/pedro/dev/sdd-open-api   │",
 		"   │ Current: cli-scaffold            │",
 		"   │ Milestone: M1                    │",
 		"   │                                  │",
@@ -71,7 +71,7 @@ func TestRenderOverview_CorruptedProjectSnapshot(t *testing.T) {
 	want := strings.Join([]string{
 		"   ╭─ Project ────────────────────────╮",
 		"   │ ! corrupted project              │",
-		"   │ Run: tsll init --force           │",
+		"   │ Run: sdd-open-api init --force   │",
 		"   │                                  │",
 		"   ╰──────────────────────────────────╯",
 	}, "\n")

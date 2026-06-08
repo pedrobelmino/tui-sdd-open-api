@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pedrobelmino/tui-sdd-open-api/internal/gpu"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/tokens"
 )
 
@@ -15,10 +14,12 @@ func TestMetrics_NoRequestsYet(t *testing.T) {
 	t.Setenv("NO_COLOR", "1")
 
 	got := RenderMetrics(MetricsData{
-		Width:  testMetricsWidth,
-		Height: 16,
-		Tokens: tokens.SessionCounter{},
-		GPU:    gpu.Snapshot{Available: false},
+		Width:           testMetricsWidth,
+		Height:          16,
+		Tokens:          tokens.SessionCounter{},
+		WindowWidth:     120,
+		WindowHeight:    40,
+		ConfiguredModel: "deepseek-v4-flash",
 	})
 
 	for _, want := range []string{
@@ -26,7 +27,10 @@ func TestMetrics_NoRequestsYet(t *testing.T) {
 		"Prompt:     0",
 		"Completion: 0",
 		"Total:      0",
-		msgNoRequestsYet,
+		"no requests yet",
+		"Metadata",
+		"120 × 40",
+		"deepseek-v4-flash",
 	} {
 		if !strings.Contains(got, want) {
 			t.Fatalf("expected %q in output:\n%s", want, got)
@@ -41,10 +45,10 @@ func TestMetrics_TokenPanelWithCounts(t *testing.T) {
 	counter.Add(1240, 890)
 
 	got := RenderMetrics(MetricsData{
-		Width:  testMetricsWidth,
-		Height: 16,
-		Tokens: counter,
-		GPU:    gpu.Snapshot{Available: false},
+		Width:           testMetricsWidth,
+		Height:          16,
+		Tokens:          counter,
+		ConfiguredModel: "deepseek-v4-flash",
 	})
 
 	for _, want := range []string{
@@ -56,107 +60,8 @@ func TestMetrics_TokenPanelWithCounts(t *testing.T) {
 			t.Fatalf("expected %q in output:\n%s", want, got)
 		}
 	}
-	if strings.Contains(got, msgNoRequestsYet) {
-		t.Fatalf("did not expect %q when requests exist:\n%s", msgNoRequestsYet, got)
-	}
-}
-
-func TestMetrics_GPUUnavailable(t *testing.T) {
-	t.Setenv("NO_COLOR", "1")
-
-	got := RenderMetrics(MetricsData{
-		Width:  testMetricsWidth,
-		Height: 16,
-		Tokens: tokens.SessionCounter{},
-		GPU: gpu.Snapshot{
-			Available: false,
-			Error:     "nvidia-smi not found",
-		},
-	})
-
-	if !strings.Contains(got, msgGPUUnavailable) {
-		t.Fatalf("expected %q in output:\n%s", msgGPUUnavailable, got)
-	}
-	if !strings.Contains(got, "nvidia-smi not found") {
-		t.Fatalf("expected error detail in output:\n%s", got)
-	}
-}
-
-func TestMetrics_GPUWithDevices(t *testing.T) {
-	t.Setenv("NO_COLOR", "1")
-
-	got := RenderMetrics(MetricsData{
-		Width:  testMetricsWidth,
-		Height: 16,
-		Tokens: tokens.SessionCounter{},
-		GPU: gpu.Snapshot{
-			Available: true,
-			Devices: []gpu.Device{
-				{
-					Index:       0,
-					Name:        "NVIDIA GeForce RTX 3090",
-					Utilization: 45,
-					MemoryUsed:  8192,
-					MemoryTotal: 24576,
-					Temperature: 65,
-				},
-				{
-					Index:       1,
-					Name:        "NVIDIA GeForce GTX 1080 Ti",
-					Utilization: 12,
-					MemoryUsed:  2048,
-					MemoryTotal: 11264,
-					Temperature: 55,
-				},
-			},
-			FetchedAt: time.Date(2024, 10, 22, 13, 39, 22, 0, time.UTC),
-		},
-	})
-
-	for _, want := range []string{
-		"[0] NVIDIA GeForce RTX 3090 │ 45% │ 8192/24576 MiB │ 65°C",
-		"[1] NVIDIA GeForce GTX 1080 Ti │ 12% │ 2048/11264 MiB │ 55°C",
-	} {
-		if !strings.Contains(got, want) {
-			t.Fatalf("expected %q in output:\n%s", want, got)
-		}
-	}
-}
-
-func TestMetrics_GPUStaleShowsTimestamp(t *testing.T) {
-	t.Setenv("NO_COLOR", "1")
-
-	fetchedAt := time.Date(2024, 10, 22, 13, 39, 22, 0, time.UTC)
-	got := RenderMetrics(MetricsData{
-		Width:  testMetricsWidth,
-		Height: 16,
-		Tokens: tokens.SessionCounter{},
-		GPU: gpu.Snapshot{
-			Available: true,
-			Stale:     true,
-			Error:     "context deadline exceeded",
-			Devices: []gpu.Device{
-				{
-					Index:       0,
-					Name:        "NVIDIA GeForce RTX 3060",
-					Utilization: 45,
-					MemoryUsed:  6349,
-					MemoryTotal: 12288,
-					Temperature: 62,
-				},
-			},
-			FetchedAt: fetchedAt,
-		},
-	})
-
-	for _, want := range []string{
-		"stale — last updated: 2024-10-22 13:39:22",
-		"context deadline exceeded",
-		"[0] NVIDIA GeForce RTX 3060 │ 45% │ 6349/12288 MiB │ 62°C",
-	} {
-		if !strings.Contains(got, want) {
-			t.Fatalf("expected %q in output:\n%s", want, got)
-		}
+	if strings.Contains(got, "no requests yet") {
+		t.Fatalf("did not expect %q when requests exist:\n%s", "no requests yet", got)
 	}
 }
 
@@ -167,47 +72,76 @@ func TestMetrics_Snapshot80Cols(t *testing.T) {
 	counter.Add(1240, 890)
 
 	got := RenderMetrics(MetricsData{
-		Width:  testMetricsWidth,
-		Height: 16,
-		Tokens: counter,
-		GPU: gpu.Snapshot{
-			Available: true,
-			Devices: []gpu.Device{
-				{
-					Index:       0,
-					Name:        "NVIDIA GeForce RTX 3060",
-					Utilization: 45,
-					MemoryUsed:  6349,
-					MemoryTotal: 12288,
-					Temperature: 62,
-				},
-			},
-			FetchedAt: time.Date(2024, 10, 22, 13, 39, 22, 0, time.UTC),
-		},
+		Width:           testMetricsWidth,
+		Height:          16,
+		Tokens:          counter,
+		WindowWidth:     120,
+		WindowHeight:    40,
+		ConfiguredModel: "deepseek-v4-flash",
 	})
-
-	lines := strings.Split(got, "\n")
-	for i, line := range lines {
-		if strings.HasPrefix(line, "╭") || strings.HasPrefix(line, "│") ||
-			strings.HasPrefix(line, "╰") {
-			continue
-		}
-		if line == "" {
-			continue
-		}
-		_ = i
-	}
 
 	if !strings.Contains(got, "Session Tokens") {
 		t.Fatal("expected Session Tokens panel")
 	}
-	if !strings.Contains(got, "GPU") {
-		t.Fatal("expected GPU panel")
+	if !strings.Contains(got, "Metadata") {
+		t.Fatal("expected Metadata panel")
 	}
 	if !strings.Contains(got, "1,240") {
 		t.Fatal("expected formatted prompt tokens")
 	}
-	if !strings.Contains(got, "RTX 3060") {
-		t.Fatal("expected GPU device name")
+	if !strings.Contains(got, "120 × 40") {
+		t.Fatal("expected window dimensions")
+	}
+	if !strings.Contains(got, "deepseek-v4-flash") {
+		t.Fatal("expected configured model name")
+	}
+}
+
+func TestMetrics_LastRequestShown(t *testing.T) {
+	t.Setenv("NO_COLOR", "1")
+
+	var counter tokens.SessionCounter
+	now := time.Now()
+	counter.PromptTokens = 5000
+	counter.CompletionTokens = 3000
+	counter.RequestCount = 1
+	counter.LastRequest = &tokens.UsageSnapshot{
+		PromptTokens:     2000,
+		CompletionTokens: 1500,
+		At:               now,
+	}
+
+	got := RenderMetrics(MetricsData{
+		Width:           testMetricsWidth,
+		Height:          16,
+		Tokens:          counter,
+		ConfiguredModel: "deepseek-v4-flash",
+	})
+
+	if !strings.Contains(got, now.Format("15:04:05")) {
+		t.Fatalf("expected last request timestamp in output:\n%s", got)
+	}
+	if !strings.Contains(got, "2,000") || !strings.Contains(got, "1,500") {
+		t.Fatalf("expected last request token counts in output:\n%s", got)
+	}
+}
+
+func TestFormatCommaInt(t *testing.T) {
+	cases := []struct {
+		n    int
+		want string
+	}{
+		{0, "0"},
+		{100, "100"},
+		{1000, "1,000"},
+		{1000000, "1,000,000"},
+		{123456789, "123,456,789"},
+		{-100, "-100"},
+	}
+	for _, c := range cases {
+		got := formatCommaInt(c.n)
+		if got != c.want {
+			t.Fatalf("formatCommaInt(%d) = %q, want %q", c.n, got, c.want)
+		}
 	}
 }

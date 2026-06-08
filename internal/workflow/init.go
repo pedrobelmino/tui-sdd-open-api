@@ -53,7 +53,7 @@ func InitProject(p InitParams) error {
 	target := defaultIfEmpty(p.Target, "dev solo")
 	solves := defaultIfEmpty(p.Solves, "structured spec-driven development with local AI")
 	stack := defaultIfEmpty(p.Stack, "- Language: Go\n- LLM: Ollama (qwen2.5-coder:3b)")
-	scopeIn := defaultIfEmpty(p.ScopeIn, "- tsll workflow: init, specify, tasks, run\n- TUI dashboard")
+	scopeIn := defaultIfEmpty(p.ScopeIn, "- sdd-open-api workflow: init, specify, tasks, run\n- TUI dashboard")
 	scopeOut := defaultIfEmpty(p.ScopeOut, "- Cloud APIs\n- macOS/Windows")
 
 	files := templates.NewProject(name, vision, target, solves, stack, scopeIn, scopeOut)
@@ -123,13 +123,13 @@ func buildAgentsIndex(root string) (string, error) {
 	var b strings.Builder
 	b.WriteString("# AGENTS.md\n\n")
 	b.WriteString("Guia de navegação para agentes no projeto.\n\n")
-	b.WriteString("## Workflow tsll\n\n")
-	b.WriteString("- Inicializar projeto: `tsll init`\n")
-	b.WriteString("- Especificar feature: `tsll specify <feature>`\n")
-	b.WriteString("- Gerar design: `tsll design <feature>`\n")
-	b.WriteString("- Gerar tasks: `tsll tasks <feature>`\n")
-	b.WriteString("- Implementar: `tsll implement <feature>`\n")
-	b.WriteString("- Executar task: `tsll run <feature> --task T1`\n\n")
+	b.WriteString("## Workflow sdd-open-api\n\n")
+	b.WriteString("- Inicializar projeto: `sdd-open-api init`\n")
+	b.WriteString("- Especificar feature: `sdd-open-api specify <feature>`\n")
+	b.WriteString("- Gerar design: `sdd-open-api design <feature>`\n")
+	b.WriteString("- Gerar tasks: `sdd-open-api tasks <feature>`\n")
+	b.WriteString("- Implementar: `sdd-open-api implement <feature>`\n")
+	b.WriteString("- Executar task: `sdd-open-api run <feature> --task T1`\n\n")
 	b.WriteString("## Índice Markdown do Projeto\n\n")
 	if len(docs) == 0 {
 		b.WriteString("_Nenhum arquivo .md encontrado._\n")
@@ -140,8 +140,8 @@ func buildAgentsIndex(root string) (string, error) {
 	}
 	b.WriteString("\n")
 	b.WriteString("## Observações\n\n")
-	b.WriteString("- Este índice é gerado no `tsll init`.\n")
-	b.WriteString("- Quando novos `.md` forem adicionados, regenere com `tsll init --force`.\n")
+	b.WriteString("- Este índice é gerado no `sdd-open-api init`.\n")
+	b.WriteString("- Quando novos `.md` forem adicionados, regenere com `sdd-open-api init --force`.\n")
 	return b.String(), nil
 }
 

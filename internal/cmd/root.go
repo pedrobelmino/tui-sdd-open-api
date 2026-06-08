@@ -13,25 +13,25 @@ import (
 var version = "0.1.0-dev"
 
 var rootCmd = &cobra.Command{
-	Use:   "tsll",
+	Use:   "sdd-open-api",
 	Short: "Spec-driven development CLI with interactive dashboard",
-	Long: `tsll guides solo developers through spec-driven development
-with a k9s-like terminal dashboard and local Ollama models.
+	Long: `sdd-open-api guides solo developers through spec-driven development
+with a k9s-like terminal dashboard.
 
-Run ` + "`tsll`" + ` for the interactive dashboard.
-Run ` + "`tsll --help`" + ` for subcommands.`,
+Run ` + "`sdd-open-api`" + ` for the interactive dashboard.
+Run ` + "`sdd-open-api --help`" + ` for subcommands.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if ShouldLaunchTUI() {
 			return tui.Run(version)
 		}
-		fmt.Println("tsll: run in an interactive terminal for the dashboard, or use tsll --help")
+		fmt.Println("sdd-open-api: run in an interactive terminal for the dashboard, or use sdd-open-api --help")
 		return nil
 	},
 	SilenceUsage: true,
 }
 
 func init() {
-	rootCmd.SetVersionTemplate("tsll {{.Version}}\n")
+	rootCmd.SetVersionTemplate("sdd-open-api {{.Version}}\n")
 	rootCmd.Version = version
 }
 

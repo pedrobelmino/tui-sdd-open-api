@@ -6,7 +6,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      cmd/tsll (main)                         │
+│                      cmd/sdd-open-api (main)                         │
 └──────────────────────────┬──────────────────────────────────┘
                            │
               ┌────────────┴────────────┐
@@ -136,7 +136,7 @@ config.Load()
 
 | Layer | Packages |
 |-------|----------|
-| Entry | `cmd/tsll` |
+| Entry | `cmd/sdd-open-api` |
 | Interface | `cmd`, `tui`, `ui` |
 | Application | `workflow` |
 | Domain | `project`, `state`, `prompts`, `templates` |

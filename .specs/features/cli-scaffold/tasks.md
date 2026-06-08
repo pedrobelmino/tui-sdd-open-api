@@ -92,8 +92,8 @@ Phase 5:  T19 → T20 → T22
 
 ### T1: Initialize Go module and entrypoint
 
-**What**: Create `go.mod`, `cmd/tsll/main.go` calling `cmd.Execute()`
-**Where**: `go.mod`, `cmd/tsll/main.go`, stub `internal/cmd/root.go` (returns nil)
+**What**: Create `go.mod`, `cmd/sdd-open-api/main.go` calling `cmd.Execute()`
+**Where**: `go.mod`, `cmd/sdd-open-api/main.go`, stub `internal/cmd/root.go` (returns nil)
 **Depends on**: None
 **Reuses**: design package structure
 **Requirements**: SCAFF-06, SCAFF-15
@@ -104,7 +104,7 @@ Phase 5:  T19 → T20 → T22
 
 **Done when**:
 - [ ] Module `github.com/pedrobelmino/tui-sdd-open-api` with Go 1.22+
-- [ ] `go build -o /dev/null ./cmd/tsll` succeeds
+- [ ] `go build -o /dev/null ./cmd/sdd-open-api` succeeds
 - [ ] Gate check passes: `go build ./... && go vet ./...`
 
 **Tests**: none (skeleton only)
@@ -112,7 +112,7 @@ Phase 5:  T19 → T20 → T22
 
 **Verify**:
 ```bash
-go build -o bin/tsll ./cmd/tsll && ./bin/tsll 2>/dev/null || true
+go build -o bin/sdd-open-api ./cmd/sdd-open-api && ./bin/sdd-open-api 2>/dev/null || true
 ```
 
 **Commit**: `feat(cli): initialize go module and entrypoint`
@@ -638,11 +638,11 @@ go build -o bin/tsll ./cmd/tsll && ./bin/tsll 2>/dev/null || true
 - Skill: NONE
 
 **Done when**:
-- [ ] `make build` → `bin/tsll` linux/amd64
+- [ ] `make build` → `bin/sdd-open-api` linux/amd64
 - [ ] `make test` → `go test ./...`
 - [ ] `make clean` removes `bin/`
 - [ ] Version injected via `-ldflags`
-- [ ] Gate check passes: `make build && ./bin/tsll --version`
+- [ ] Gate check passes: `make build && ./bin/sdd-open-api --version`
 
 **Tests**: none (verified via make targets)
 **Gate**: quick
@@ -653,8 +653,8 @@ go build -o bin/tsll ./cmd/tsll && ./bin/tsll 2>/dev/null || true
 
 ### T22: Integration smoke verification
 
-**What**: Wire `cmd/tsll/main.go`, run full gate, document smoke checklist
-**Where**: `cmd/tsll/main.go` (final wire), update spec traceability
+**What**: Wire `cmd/sdd-open-api/main.go`, run full gate, document smoke checklist
+**Where**: `cmd/sdd-open-api/main.go` (final wire), update spec traceability
 **Depends on**: T19, T20, T21
 **Reuses**: all packages
 **Requirements**: SCAFF-01..43 (verification)
@@ -664,12 +664,12 @@ go build -o bin/tsll ./cmd/tsll && ./bin/tsll 2>/dev/null || true
 - Skill: `tlc-spec-driven` (validate phase)
 
 **Done when**:
-- [ ] `make build` produces working `bin/tsll`
-- [ ] `./bin/tsll --help` shows subcommands (plain)
-- [ ] `./bin/tsll --version` shows version
-- [ ] `./bin/tsll init` returns stub message exit 1
-- [ ] `echo | ./bin/tsll` prints plain hint (non-TTY)
-- [ ] `TSLL_TUI=0 ./bin/tsll` no TUI
+- [ ] `make build` produces working `bin/sdd-open-api`
+- [ ] `./bin/sdd-open-api --help` shows subcommands (plain)
+- [ ] `./bin/sdd-open-api --version` shows version
+- [ ] `./bin/sdd-open-api init` returns stub message exit 1
+- [ ] `echo | ./bin/sdd-open-api` prints plain hint (non-TTY)
+- [ ] `TSLL_TUI=0 ./bin/sdd-open-api` no TUI
 - [ ] Full gate: `go test ./... -count=1` all pass
 - [ ] All 43 requirements marked Verified in spec traceability
 
@@ -679,12 +679,12 @@ go build -o bin/tsll ./cmd/tsll && ./bin/tsll 2>/dev/null || true
 **Verify**:
 ```bash
 make build
-./bin/tsll --help
-./bin/tsll --version
-./bin/tsll init; echo exit:$?
-echo | ./bin/tsll
+./bin/sdd-open-api --help
+./bin/sdd-open-api --version
+./bin/sdd-open-api init; echo exit:$?
+echo | ./bin/sdd-open-api
 go test ./... -count=1
-# Manual: run ./bin/tsll in TTY — dashboard opens, keys 1-4 work, q quits
+# Manual: run ./bin/sdd-open-api in TTY — dashboard opens, keys 1-4 work, q quits
 ```
 
 **Commit**: `feat(cli): complete cli-scaffold integration`

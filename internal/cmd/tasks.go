@@ -35,7 +35,7 @@ var tasksCmd = &cobra.Command{
 		specPath := filepath.Join(ctx.Root, ".specs/features", feature, "spec.md")
 		specData, err := os.ReadFile(specPath)
 		if err != nil {
-			return fmt.Errorf("read spec.md: %w (run tsll specify first)", err)
+			return fmt.Errorf("read spec.md: %w (run sdd-open-api specify first)", err)
 		}
 
 		system := prompts.TasksSystem(ctx.Root)

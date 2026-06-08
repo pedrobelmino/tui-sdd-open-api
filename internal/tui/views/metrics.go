@@ -5,29 +5,26 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pedrobelmino/tui-sdd-open-api/internal/gpu"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/tokens"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/ui"
 )
 
 const (
-	tokensPanelTitle = "Session Tokens"
-	gpuPanelTitle    = "GPU"
-
-	msgNoRequestsYet       = "no requests yet"
-	msgGPUUnavailable      = "GPU metrics unavailable"
-	msgStalePrefix         = "stale — last updated:"
+	tokensPanelTitle   = "Session Tokens"
+	metadataPanelTitle = "Metadata"
 )
 
 // MetricsData is the subset of RootModel state needed to render the Metrics view.
 type MetricsData struct {
-	Width  int
-	Height int
-	Tokens tokens.SessionCounter
-	GPU    gpu.Snapshot
+	Width           int
+	Height          int
+	WindowWidth     int
+	WindowHeight    int
+	Tokens          tokens.SessionCounter
+	ConfiguredModel string
 }
 
-// RenderMetrics renders the Metrics view with session token and GPU panels.
+// RenderMetrics renders the Metrics view with session token and metadata panels.
 func RenderMetrics(m MetricsData) string {
 	width := m.Width
 	if width < 1 {
@@ -39,15 +36,15 @@ func RenderMetrics(m MetricsData) string {
 	}
 
 	tokenH := 8
-	gpuH := height - tokenH - 1
-	if gpuH < 5 {
-		gpuH = 5
+	metaH := height - tokenH - 1
+	if metaH < 5 {
+		metaH = 5
 	}
 
 	tokensBox := ui.Panel(tokensPanelTitle, renderTokensContent(m.Tokens), width, tokenH)
-	gpuBox := ui.Panel(gpuPanelTitle, renderGPUContent(m.GPU), width, gpuH)
+	metaBox := ui.Panel(metadataPanelTitle, renderMetadataContent(m), width, metaH)
 
-	return tokensBox + "\n\n" + gpuBox
+	return tokensBox + "\n\n" + metaBox
 }
 
 func renderTokensContent(counter tokens.SessionCounter) string {
@@ -58,7 +55,7 @@ func renderTokensContent(counter tokens.SessionCounter) string {
 		fmt.Sprintf("Requests:   %d", counter.RequestCount),
 	}
 	if counter.RequestCount == 0 {
-		lines = append(lines, msgNoRequestsYet)
+		lines = append(lines, "no requests yet")
 	} else if counter.LastRequest != nil {
 		last := counter.LastRequest
 		lines = append(lines, fmt.Sprintf(
@@ -71,46 +68,9 @@ func renderTokensContent(counter tokens.SessionCounter) string {
 	return strings.Join(lines, "\n")
 }
 
-func renderGPUContent(snap gpu.Snapshot) string {
-	if !snap.Available && !snap.Stale {
-		lines := []string{msgGPUUnavailable}
-		if snap.Error != "" {
-			lines = append(lines, snap.Error)
-		}
-		return strings.Join(lines, "\n")
-	}
-
-	var lines []string
-	if snap.Stale {
-		lines = append(lines, fmt.Sprintf("%s %s", msgStalePrefix, snap.FetchedAt.Format("2006-01-02 15:04:05")))
-		if snap.Error != "" {
-			lines = append(lines, snap.Error)
-		}
-	}
-
-	for _, dev := range snap.Devices {
-		lines = append(lines, formatDeviceLine(dev))
-	}
-
-	if len(lines) == 0 {
-		return msgGPUUnavailable
-	}
-	return strings.Join(lines, "\n")
-}
-
-func formatDeviceLine(dev gpu.Device) string {
-	return fmt.Sprintf(
-		"[%d] %s │ %.0f%% │ %s │ %.0f°C",
-		dev.Index,
-		dev.Name,
-		dev.Utilization,
-		formatVRAM(dev.MemoryUsed, dev.MemoryTotal),
-		dev.Temperature,
-	)
-}
-
-func formatVRAM(used, total uint64) string {
-	return fmt.Sprintf("%d/%d MiB", used, total)
+func renderMetadataContent(m MetricsData) string {
+	return fmt.Sprintf("Terminal size: %d × %d\nConfigured model: %s",
+		m.WindowWidth, m.WindowHeight, m.ConfiguredModel)
 }
 
 func formatCommaInt(n int) string {

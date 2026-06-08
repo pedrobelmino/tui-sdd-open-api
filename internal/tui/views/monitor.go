@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pedrobelmino/tui-sdd-open-api/internal/gpu"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/tokens"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/ui"
@@ -12,16 +11,17 @@ import (
 
 const monitorPanelTitle = "Monitor"
 
-// MonitorData is the live Ollama/GPU/token snapshot for the status strip.
+// MonitorData is the live Ollama/token/window snapshot for the status strip.
 type MonitorData struct {
 	Width           int
+	WindowWidth     int
+	WindowHeight    int
 	Ollama          ollama.Snapshot
-	GPU             gpu.Snapshot
 	Tokens          tokens.SessionCounter
 	ConfiguredModel string
 }
 
-// RenderMonitorStrip renders a compact always-visible model + GPU status panel.
+// RenderMonitorStrip renders a compact always-visible model + metadata status panel.
 func RenderMonitorStrip(d MonitorData) string {
 	width := d.Width
 	if width < 1 {
@@ -33,7 +33,7 @@ func RenderMonitorStrip(d MonitorData) string {
 func monitorContent(d MonitorData) string {
 	return strings.Join([]string{
 		formatOllamaLine(d.Ollama, d.ConfiguredModel),
-		formatGPULine(d.GPU),
+		formatMetadataLine(d),
 		formatTokensLine(d.Tokens),
 	}, "\n")
 }
@@ -57,21 +57,9 @@ func formatOllamaLine(snap ollama.Snapshot, configured string) string {
 	return fmt.Sprintf("Model: ● %s │ VRAM %s%s", r.Name, vram, ctx)
 }
 
-func formatGPULine(snap gpu.Snapshot) string {
-	if !snap.Available || len(snap.Devices) == 0 {
-		msg := "GPU: unavailable"
-		if snap.Error != "" {
-			msg += " — " + snap.Error
-		}
-		return msg
-	}
-	d := snap.Devices[0]
-	tag := strings.ToUpper(string(d.Vendor))
-	if tag == "" {
-		tag = "GPU"
-	}
-	return fmt.Sprintf("GPU:   %s %.0f%% │ VRAM %d/%d MiB │ %.0f°C",
-		tag, d.Utilization, d.MemoryUsed, d.MemoryTotal, d.Temperature)
+func formatMetadataLine(d MonitorData) string {
+	return fmt.Sprintf("Window: %d×%d │ Model: %s",
+		d.WindowWidth, d.WindowHeight, d.ConfiguredModel)
 }
 
 func formatTokensLine(counter tokens.SessionCounter) string {

@@ -7,7 +7,7 @@ Guia para agentes de IA trabalhando neste repositório.
 **tui-sdd-open-api** é uma CLI Go com dashboard TUI (Bubble Tea) para spec-driven development usando Ollama local. O binário se chama **`tsll`**.
 
 - **Módulo Go:** `github.com/pedrobelmino/tui-sdd-open-api`
-- **Entry:** `cmd/tsll/main.go` → `internal/cmd`
+- **Entry:** `cmd/sdd-open-api/main.go` → `internal/cmd`
 - **TUI:** `internal/tui/` + `internal/tui/views/`
 - **Workflow:** `internal/workflow/` (init, specify, tasks, run)
 - **Specs:** `.specs/` no root de cada projeto bel/tsll
@@ -47,7 +47,7 @@ Ao planejar ou implementar features neste repo:
 ## Comandos úteis
 
 ```bash
-make build          # → bin/tsll
+make build          # → bin/sdd-open-api
 make test
 tsll doctor         # smoke: Ollama + GPU + .specs/
 ```

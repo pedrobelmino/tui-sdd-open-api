@@ -4,12 +4,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pedrobelmino/tui-sdd-open-api/internal/gpu"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/tokens"
 )
 
-func TestRenderMonitorStrip_RunningModelAndGPU(t *testing.T) {
+func TestRenderMonitorStrip_RunningModelAndMetadata(t *testing.T) {
 	out := RenderMonitorStrip(MonitorData{
 		Width: 100,
 		Ollama: ollama.Snapshot{
@@ -18,20 +17,17 @@ func TestRenderMonitorStrip_RunningModelAndGPU(t *testing.T) {
 				Name: "qwen2.5-coder:latest", SizeVRAM: 2408937472, ContextLength: 4096,
 			}},
 		},
-		GPU: gpu.Snapshot{
-			Available: true,
-			Devices: []gpu.Device{{
-				Vendor: gpu.VendorAMD, Utilization: 55, MemoryUsed: 3456, MemoryTotal: 4096, Temperature: 62,
-			}},
-		},
-		Tokens: tokens.SessionCounter{PromptTokens: 100, CompletionTokens: 50, RequestCount: 2},
+		Tokens:          tokens.SessionCounter{PromptTokens: 100, CompletionTokens: 50, RequestCount: 2},
+		WindowWidth:     120,
+		WindowHeight:    40,
+		ConfiguredModel: "deepseek-v4-flash",
 	})
 
 	for _, want := range []string{
 		"Monitor",
 		"qwen2.5-coder:latest",
-		"AMD 55%",
-		"VRAM 3456/4096 MiB",
+		"120×40",
+		"deepseek-v4-flash",
 		"100 prompt + 50 completion",
 	} {
 		if !strings.Contains(out, want) {

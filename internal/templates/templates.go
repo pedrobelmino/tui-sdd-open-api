@@ -65,7 +65,7 @@ func NewProject(name, vision, target, solves, stack, scopeIn, scopeOut string) P
 
 **Bootstrap** - IN PROGRESS
 
-- Project structure via tsll init
+- Project structure via sdd-open-api init
 `, name),
 		State: fmt.Sprintf(`# State
 
@@ -76,12 +76,12 @@ func NewProject(name, vision, target, solves, stack, scopeIn, scopeOut string) P
 
 ## Recent Decisions (Last 60 days)
 
-### AD-001: Project initialized via tsll init (%s)
+### AD-001: Project initialized via sdd-open-api init (%s)
 
 **Decision:** Bootstrap .specs/project/ with tui-sdd-open-api
 **Reason:** Start spec-driven workflow
 **Trade-off:** —
-**Impact:** Ready for tsll specify / tsll tasks / tsll run
+**Impact:** Ready for sdd-open-api specify / sdd-open-api tasks / sdd-open-api run
 
 ---
 
@@ -99,7 +99,7 @@ _None._
 
 ## Todos
 
-- [ ] Specify first feature with tsll specify
+- [ ] Specify first feature with sdd-open-api specify
 `, now, now),
 	}
 }

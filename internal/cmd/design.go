@@ -36,7 +36,7 @@ var designCmd = &cobra.Command{
 		specPath := filepath.Join(featureDir, "spec.md")
 		specData, err := os.ReadFile(specPath)
 		if err != nil {
-			return fmt.Errorf("read spec.md: %w (run tsll specify first)", err)
+			return fmt.Errorf("read spec.md: %w (run sdd-open-api specify first)", err)
 		}
 
 		user := fmt.Sprintf("Feature: %s\n\nspec.md:\n%s\n\nGenerate complete design.md now.", feature, string(specData))

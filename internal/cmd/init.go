@@ -17,7 +17,7 @@ var (
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Initialize a tsll project (.specs/project/)",
+	Short: "Initialize an sdd-open-api project (.specs/project/)",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cwd, err := os.Getwd()
 		if err != nil {
@@ -34,7 +34,7 @@ var initCmd = &cobra.Command{
 		target := "dev solo"
 		solves := "structured spec-driven development with local AI"
 		stack := "- Language: Go\n- LLM: Ollama (qwen2.5-coder:3b)"
-		scopeIn := "- tsll workflow: init, specify, tasks, run\n- TUI dashboard"
+		scopeIn := "- sdd-open-api workflow: init, specify, tasks, run\n- TUI dashboard"
 		scopeOut := "- Cloud APIs\n- macOS/Windows"
 
 		if !initNonInter {
