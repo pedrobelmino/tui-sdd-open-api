@@ -25,6 +25,7 @@ type FooterMonitorData struct {
 	Tokens          tokens.SessionCounter
 	System          system.Snapshot
 	ConfiguredModel string
+	Provider        string
 }
 
 // RenderMonitorFooter renders a one-line monitor bar (tabs 4+5 summary) for the page footer.
@@ -38,7 +39,7 @@ func RenderMonitorFooter(d FooterMonitorData) string {
 
 func formatFooterMonitorLine(d FooterMonitorData) string {
 	segments := []string{
-		compactModelSegment(d.Ollama, d.ConfiguredModel),
+		compactModelSegment(d.Ollama, d.ConfiguredModel, d.Provider),
 		compactMetadataSegment(d),
 		compactTokensSegment(d.Tokens),
 		compactSystemSegment(d.System),
@@ -51,7 +52,10 @@ func formatFooterMonitorLine(d FooterMonitorData) string {
 	return truncateRunes(line, max)
 }
 
-func compactModelSegment(snap ollama.Snapshot, configured string) string {
+func compactModelSegment(snap ollama.Snapshot, configured, provider string) string {
+	if provider == "openapi" {
+		return "Open API · " + configured
+	}
 	if !snap.Reachable {
 		return "Model offline"
 	}

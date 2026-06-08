@@ -493,7 +493,7 @@ func (m RootModel) renderBody(width, height int) string {
 		return views.RenderMetrics(views.MetricsData{
 			Width: width, Height: height, Tokens: m.tokens,
 			WindowWidth: m.width, WindowHeight: m.height,
-			ConfiguredModel: m.cfg.Model,
+			ConfiguredModel: m.cfg.Model, Provider: m.cfg.Provider,
 		})
 	case ViewSystem:
 		return views.RenderSystem(views.SystemData{

@@ -294,8 +294,8 @@ func offScopePlanPaths(paths, allowed []string) []string {
 }
 
 func filePlanTooLargeNudge(max int) string {
-	return "Your <file_plan> lists too many files for this single task. " +
-		"Re-send <file_plan> with AT MOST " + strconv.Itoa(max) + " paths — only what THIS task title requires, not the whole app."
+	return "Your file plan lists too many files for this single task. " +
+		"Re-list with AT MOST " + strconv.Itoa(max) + " paths — only what THIS task title requires, not the whole app."
 }
 
 func filePlanOffScopeNudge(bad, allowed []string) string {

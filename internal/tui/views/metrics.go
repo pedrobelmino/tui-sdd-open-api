@@ -22,6 +22,7 @@ type MetricsData struct {
 	WindowHeight    int
 	Tokens          tokens.SessionCounter
 	ConfiguredModel string
+	Provider        string
 }
 
 // RenderMetrics renders the Metrics view with session token and metadata panels.
@@ -69,8 +70,12 @@ func renderTokensContent(counter tokens.SessionCounter) string {
 }
 
 func renderMetadataContent(m MetricsData) string {
-	return fmt.Sprintf("Terminal size: %d × %d\nConfigured model: %s",
-		m.WindowWidth, m.WindowHeight, m.ConfiguredModel)
+	provider := m.Provider
+	if provider == "" {
+		provider = "ollama"
+	}
+	return fmt.Sprintf("Terminal size: %d × %d\nProvider: %s\nConfigured model: %s",
+		m.WindowWidth, m.WindowHeight, provider, m.ConfiguredModel)
 }
 
 func formatCommaInt(n int) string {

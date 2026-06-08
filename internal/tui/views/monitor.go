@@ -19,6 +19,7 @@ type MonitorData struct {
 	Ollama          ollama.Snapshot
 	Tokens          tokens.SessionCounter
 	ConfiguredModel string
+	Provider        string
 }
 
 // RenderMonitorStrip renders a compact always-visible model + metadata status panel.
@@ -32,13 +33,16 @@ func RenderMonitorStrip(d MonitorData) string {
 
 func monitorContent(d MonitorData) string {
 	return strings.Join([]string{
-		formatOllamaLine(d.Ollama, d.ConfiguredModel),
+		formatModelLine(d.Ollama, d.ConfiguredModel, d.Provider),
 		formatMetadataLine(d),
 		formatTokensLine(d.Tokens),
 	}, "\n")
 }
 
-func formatOllamaLine(snap ollama.Snapshot, configured string) string {
+func formatModelLine(snap ollama.Snapshot, configured, provider string) string {
+	if provider == "openapi" {
+		return fmt.Sprintf("Provider: Open API (remote) · %s", configured)
+	}
 	if !snap.Reachable {
 		return "Model: offline — Ollama unreachable"
 	}

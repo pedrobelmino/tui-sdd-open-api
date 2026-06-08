@@ -16,6 +16,7 @@ func newTestModel() RootModel {
 	m := NewRootModel("0.1.0-test")
 	m.width = 100
 	m.height = 30
+	m.cfg.Provider = "ollama"
 	return m
 }
 
@@ -89,7 +90,6 @@ func TestModel_QuitKey(t *testing.T) {
 
 func TestModel_OllamaUnreachableBanner(t *testing.T) {
 	m := newTestModel()
-	m.cfg.Provider = "ollama" // force ollama so banner is not silenced
 	updated, _ := m.Update(OllamaSnapshotMsg{Snapshot: ollama.Snapshot{Reachable: false}})
 	m2 := updated.(RootModel)
 	if m2.errBanner == "" {

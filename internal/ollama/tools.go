@@ -143,7 +143,7 @@ func (c *genClient) ChatWithTools(
 		layout := buildBootstrapLayout(exec, ldResult)
 		greenfield = isGreenfieldLayout(ldResult)
 		if greenfield {
-			emit(onChunk, "   🌱 greenfield project — no source tree yet; model must emit <file_plan> from tasks.md, spec.md and design.md")
+			emit(onChunk, "   🌱 greenfield project — no source tree yet; list planned files before implementing")
 		} else if bootstrapSatisfiesInspection(ldResult, layout) {
 			emit(onChunk, "   ✓ source tree pre-loaded from bootstrap")
 		}
@@ -343,7 +343,10 @@ func (c *genClient) ChatWithTools(
 					planReceived = true
 					planNudgeStreak = 0
 					bumpLoopLimitForPlan(&loopLimit, len(paths))
-					emit(onChunk, "📋 file plan (%d): %s", len(paths), strings.Join(paths, ", "))
+					emit(onChunk, "📋 Planned files (%d)", len(paths))
+					for _, p := range paths {
+						emit(onChunk, "   · %s", p)
+					}
 					if loopLimit > initialLoopLimit {
 						emit(onChunk, "   📎 turn budget raised to %d for planned files", loopLimit)
 					}
@@ -1123,7 +1126,7 @@ func prematureDoneNudge(filesWritten, minWrites int, greenfield bool) string {
 		msg += " GREENFIELD: create the main entry point, components, and wiring — not just one stub file."
 	}
 	if filesWritten > 0 && filesWritten < minWrites {
-		msg += " Start with <file_plan> if you have not listed all paths yet."
+		msg += " Start by listing planned file paths if you have not done so yet."
 	}
 	return msg
 }
