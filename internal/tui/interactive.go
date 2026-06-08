@@ -10,10 +10,12 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/lipgloss"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/config"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/project"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/state"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/ui"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/workflow"
 )
@@ -78,7 +80,7 @@ func (m RootModel) handleFeaturesKey(msg tea.KeyMsg) (RootModel, tea.Cmd) {
 	case key.Matches(msg, m.keymap.Implement):
 		if len(m.features) > 0 {
 			name := m.sortedFeatureName()
-			return m.startAction(ActionImplement, name, "", "", "")
+			return m.startAction(ActionImplementPlan, name, "", "", "")
 		}
 	}
 	return m, nil
@@ -125,17 +127,35 @@ func (m RootModel) handleDetailKey(msg tea.KeyMsg) (RootModel, tea.Cmd) {
 	return m, nil
 }
 
+// isTextAreaForm returns true for forms that use the multi-line textarea (enter = newline).
+func isTextAreaForm(kind FormKind) bool {
+	switch kind {
+	case FormFeatureBrief, FormInitVision, FormQuickTask, FormAsk, FormActionReply:
+		return true
+	}
+	return false
+}
+
 func (m RootModel) handleFormKey(msg tea.KeyMsg) (RootModel, tea.Cmd) {
 	switch {
 	case key.Matches(msg, m.keymap.Back):
 		m.screen = m.formReturnScreen
 		m.formKind = FormNone
+		m.statusMsg = ""
 	case key.Matches(msg, m.keymap.Submit):
-		return m.submitForm()
+		// Only submit on Enter for single-line text input forms.
+		// Textarea forms use ctrl+s (matched below via keymap.TextAreaSubmit).
+		if !isTextAreaForm(m.formKind) {
+			return m.submitForm()
+		}
+	case key.Matches(msg, m.keymap.TextAreaSubmit):
+		if isTextAreaForm(m.formKind) {
+			return m.submitForm()
+		}
 	}
 
 	var cmd tea.Cmd
-	if m.formKind == FormFeatureBrief || m.formKind == FormInitVision {
+	if isTextAreaForm(m.formKind) {
 		m.textArea, cmd = m.textArea.Update(msg)
 	} else {
 		m.textInput, cmd = m.textInput.Update(msg)
@@ -199,6 +219,11 @@ func (m RootModel) handleActionKey(msg tea.KeyMsg) (RootModel, tea.Cmd) {
 	}
 
 	if m.actionNeedsInput && key.Matches(msg, m.keymap.Submit) {
+		// Checkpoint questions: re-open the checkpoint form at current index
+		if len(m.checkpointQuestions) > 0 && m.checkpointIndex < len(m.checkpointQuestions) {
+			m = m.openFormWithReturn(FormCheckpointQuestion, ScreenAction)
+			return m, nil
+		}
 		m = m.openFormWithReturn(FormActionReply, ScreenAction)
 		return m, nil
 	}
@@ -207,6 +232,15 @@ func (m RootModel) handleActionKey(msg tea.KeyMsg) (RootModel, tea.Cmd) {
 		if m.actionCancel != nil {
 			m.actionCancel()
 			m.actionCancel = nil
+		}
+		// Clean up implement-all flow state
+		if m.isImplementAllFlow {
+			m.isImplementAllFlow = false
+			m.implementTaskIDs = nil
+			m.implementTaskIdx = 0
+			m.checkpointQuestions = nil
+			m.checkpointAnswers = nil
+			m.checkpointIndex = 0
 		}
 		m.screen = m.actionReturnScreen
 		if m.actionReturnScreen == ScreenFeatureDetail {
@@ -305,10 +339,103 @@ func (m RootModel) submitForm() (RootModel, tea.Cmd) {
 			m.statusMsg = "reply required"
 			return m, nil
 		}
+		// Check if we're in an interactive specify/design/tasks flow with clarifying questions.
+		if m.pendingDraft != "" {
+			var pass2Kind ActionKind
+			switch m.actionKind {
+			case ActionSpecify:
+				pass2Kind = ActionSpecifyPass2
+			case ActionDesign:
+				pass2Kind = ActionDesignPass2
+			case ActionTasks:
+				pass2Kind = ActionTasksPass2
+			default:
+				m.statusMsg = "unexpected pending draft action"
+				return m, nil
+			}
+			m.screen = m.actionReturnScreen
+			m.formKind = FormNone
+			// Answers as taskID, draft as prompt
+			return m.startAction(pass2Kind, m.selectedFeature, "", answer, m.pendingDraft)
+		}
 		m.screen = ScreenAction
 		m.formKind = FormNone
 		prompt := "Model asked:\n" + m.actionQuestion + "\n\nUser answer:\n" + answer + "\n\nContinue with the implementation/workflow now."
 		return m.startAction(ActionQuickTask, m.selectedFeature, "", "", prompt)
+
+	case FormCheckpointQuestion:
+		answer := strings.TrimSpace(m.textInput.Value())
+		if answer == "" {
+			m.statusMsg = "answer required"
+			return m, nil
+		}
+
+		// Implement-all flow: answer is a task decision (execute/skip/all)
+		if m.isImplementAllFlow {
+			m.screen = m.actionReturnScreen
+			m.formKind = FormNone
+			choice := strings.ToLower(answer)
+
+			switch {
+			case choice == "yes" || choice == "y" || choice == "1" || choice == "execute" || choice == "":
+				// Execute current task
+				taskID := m.implementTaskIDs[m.implementTaskIdx]
+				parts := strings.SplitN(taskID, "|", 2)
+				id := parts[0]
+				return m.startAction(ActionRun, m.selectedFeature, "", id, "")
+
+			case choice == "no" || choice == "n" || choice == "2" || choice == "skip":
+				// Skip current task, advance to next
+				m.implementTaskIdx++
+				if m.implementTaskIdx < len(m.implementTaskIDs) {
+					taskLabel := m.implementTaskIDs[m.implementTaskIdx]
+					m.checkpointQuestions = []workflow.CheckpointQuestion{{
+						Question: fmt.Sprintf("Next task:\n\n%s\n\nProceed with implementation?", taskLabel),
+						Options:  []string{"Execute", "Skip", "Implement All"},
+					}}
+					m.checkpointAnswers = nil
+					m.checkpointIndex = 0
+					return m.openFormWithReturn(FormCheckpointQuestion, m.formReturnScreen), nil
+				}
+				// All skipped — done
+				m.isImplementAllFlow = false
+				m.actionLog += "\n\n✓ no more tasks"
+				m.screen = m.actionReturnScreen
+				m.formKind = FormNone
+				return m, nil
+
+			case choice == "all" || choice == "a" || choice == "3" || choice == "implement all":
+				// Run remaining tasks in batch
+				m.isImplementAllFlow = false
+				m.implementTaskIDs = nil
+				m.implementTaskIdx = 0
+				return m.startAction(ActionImplement, m.selectedFeature, "", "", "")
+
+			default:
+				// Treat as "execute" for unrecognized input
+				taskID := m.implementTaskIDs[m.implementTaskIdx]
+				parts := strings.SplitN(taskID, "|", 2)
+				id := parts[0]
+				return m.startAction(ActionRun, m.selectedFeature, "", id, "")
+			}
+		}
+
+		// Original checkpoint flow (design/spec decisions)
+		m.checkpointAnswers = append(m.checkpointAnswers, answer)
+		m.checkpointIndex++
+		if m.checkpointIndex < len(m.checkpointQuestions) {
+			// Show next question in same form
+			return m.openFormWithReturn(FormCheckpointQuestion, m.formReturnScreen), nil
+		}
+		// All questions answered — build combined answer string
+		combined := buildCheckpointAnswerBlock(m.checkpointQuestions, m.checkpointAnswers)
+		// Clean up checkpoint state
+		m.checkpointQuestions = nil
+		m.checkpointAnswers = nil
+		m.checkpointIndex = 0
+		m.screen = m.actionReturnScreen
+		m.formKind = FormNone
+		return m.startAction(m.checkpointPass2Kind, m.selectedFeature, "", combined, m.pendingDraft)
 
 	case FormAPIKey:
 		key := strings.TrimSpace(m.textInput.Value())
@@ -368,6 +495,7 @@ func (m RootModel) openFormWithReturn(kind FormKind, returnScreen Screen) RootMo
 	m.formReturnScreen = returnScreen
 	m.screen = ScreenForm
 	m.formKind = kind
+	m.statusMsg = ""
 
 	switch kind {
 	case FormNewFeatureName:
@@ -426,6 +554,13 @@ func (m RootModel) openFormWithReturn(kind FormKind, returnScreen Screen) RootMo
 		m.textInput.Placeholder = "1 or 2"
 		m.textInput.CharLimit = 1
 		m.textInput.Width = 4
+		m.textInput.EchoMode = textinput.EchoNormal
+	case FormCheckpointQuestion:
+		m.textInput.Focus()
+		m.textInput.SetValue("")
+		m.textInput.Placeholder = "Your choice..."
+		m.textInput.CharLimit = 256
+		m.textInput.Width = 60
 		m.textInput.EchoMode = textinput.EchoNormal
 	}
 	return m
@@ -518,7 +653,16 @@ func (m RootModel) startAction(kind ActionKind, feature, brief, taskID, prompt s
 }
 
 func runWorkflow(ctx context.Context, kind ActionKind, root, feature, brief, taskID, prompt string, ch chan<- tea.Msg) {
-	defer close(ch)
+	defer func() {
+		if r := recover(); r != nil {
+			ch <- ActionFinishedMsg{
+				Kind:    kind,
+				Feature: feature,
+				Err:     fmt.Errorf("panic: %v", r),
+			}
+		}
+		close(ch)
+	}()
 	svc := workflow.New()
 
 	var usage ollama.TokenUsage
@@ -539,11 +683,73 @@ func runWorkflow(ctx context.Context, kind ActionKind, root, feature, brief, tas
 
 	switch kind {
 	case ActionSpecify:
-		usage, err = svc.Specify(ctx, root, feature, brief, onChunk)
+		var draft string
+		draft, usage, err = svc.SpecifyDraft(ctx, root, feature, brief, onChunk)
+		if err == nil {
+			if workflow.HasClarifyingQuestions(draft) {
+				output = draft // pass back to TUI for user Q&A
+			} else {
+				// No questions — write as final immediately
+				if werr := workflow.WriteSpecResult(root, feature, draft); werr == nil {
+					_ = state.UpdateCurrentWork(filepath.Join(root, ".specs/project/STATE.md"), feature+" — spec generated")
+				}
+				output = ""
+			}
+		}
+	case ActionSpecifyPass2:
+		// answers=taskID, draft=prompt (from FormActionReply)
+		usage, err = svc.SpecifyFinalize(ctx, root, feature, brief, prompt, taskID, onChunk)
 	case ActionDesign:
-		usage, err = svc.Design(ctx, root, feature, onChunk)
+		var draft string
+		draft, usage, err = svc.DesignDraft(ctx, root, feature, onChunk)
+		if err == nil {
+			if workflow.HasClarifyingQuestions(draft) {
+				output = draft
+			} else {
+				if werr := workflow.WriteDesignResult(root, feature, draft); werr == nil {
+					_ = state.UpdateCurrentWork(filepath.Join(root, ".specs/project/STATE.md"), feature+" — design generated")
+				}
+				output = ""
+			}
+		}
+	case ActionDesignPass2:
+		usage, err = svc.DesignFinalize(ctx, root, feature, prompt, taskID, onChunk)
 	case ActionTasks:
-		usage, err = svc.Tasks(ctx, root, feature, onChunk)
+		var draft string
+		draft, usage, err = svc.TasksDraft(ctx, root, feature, onChunk)
+		if err == nil {
+			if workflow.HasClarifyingQuestions(draft) {
+				output = draft
+			} else {
+				if werr := workflow.WriteTasksResult(root, feature, draft); werr == nil {
+					_ = state.UpdateCurrentWork(filepath.Join(root, ".specs/project/STATE.md"), feature+" — tasks generated")
+				}
+				output = ""
+			}
+		}
+	case ActionTasksPass2:
+		usage, err = svc.TasksFinalize(ctx, root, feature, prompt, taskID, onChunk)
+	case ActionImplementPlan:
+		tasksPath := filepath.Join(root, ".specs/features", feature, "tasks.md")
+		var tasks []project.TaskEntry
+		tasks, err = project.ParseTasks(tasksPath)
+		if err == nil {
+			pending := project.ImplementableTasks(tasks)
+			if len(pending) == 0 {
+				output = ""
+			} else {
+				var lines []string
+				for _, t := range pending {
+					if t.Title != "" {
+						lines = append(lines, t.ID+"|"+t.Title)
+					} else {
+						lines = append(lines, t.ID)
+					}
+				}
+				output = strings.Join(lines, "\n")
+				usage = ollama.TokenUsage{} // no LLM call
+			}
+		}
 	case ActionImplement:
 		usage, err = svc.Implement(ctx, root, feature, onChunk)
 	case ActionRun:
@@ -575,17 +781,22 @@ func actionTickCmd() tea.Cmd {
 }
 
 func (m RootModel) renderForm(width, height int) string {
-	title := "New feature"
-	body := m.textInput.View()
+	var title, body string
+	isInput := true // true = textinput, false = textarea
+
 	switch m.formKind {
+	case FormNewFeatureName:
+		title = "New feature"
 	case FormFeatureBrief:
 		title = "Describe: " + m.pendingFeature
 		body = m.textArea.View()
+		isInput = false
 	case FormInitName:
 		title = "Init project — name"
 	case FormInitVision:
 		title = "Init project — vision: " + m.pendingInitName
 		body = m.textArea.View()
+		isInput = false
 	case FormQuickTask:
 		if m.pendingFeature != "" {
 			title = "Quick task: " + m.pendingFeature
@@ -593,15 +804,33 @@ func (m RootModel) renderForm(width, height int) string {
 			title = "Quick task"
 		}
 		body = m.textArea.View()
+		isInput = false
 	case FormAsk:
 		title = "Ask: " + m.pendingFeature
 		body = m.textArea.View()
+		isInput = false
 	case FormActionReply:
-		title = "Reply to model"
+		if m.pendingDraft != "" {
+			title = "Answer clarifying questions for " + m.pendingFeature
+		} else {
+			title = "Answer clarifying questions"
+		}
 		body = m.textArea.View()
+		isInput = false
+	case FormCheckpointQuestion:
+		total := len(m.checkpointQuestions)
+		idx := m.checkpointIndex
+		if idx >= 0 && idx < total {
+			if m.isImplementAllFlow {
+				title = "Implement: " + m.pendingFeature
+			} else {
+				title = "Decision: " + m.pendingFeature
+			}
+			display := workflow.FormatCheckpointForDisplay(m.checkpointQuestions[idx], idx, total)
+			body = display + "\n\n▸ " + m.textInput.View()
+		}
 	case FormAPIKey:
 		title = "Open API key"
-		body = m.textInput.View()
 	case FormAPIPersist:
 		title = "Persist API key?"
 		body = "Key: " + maskKey(m.cfg.APIKey) + "\n\n" + m.textInput.View()
@@ -609,7 +838,11 @@ func (m RootModel) renderForm(width, height int) string {
 		title = "Choose model"
 		body = "1 - deepseek-v4-flash\n2 - deepseek-v4-pro\n\n" + m.textInput.View()
 	}
+
 	help := "enter: submit  esc: cancel"
+	if !isInput {
+		help = "ctrl+s: submit  esc: cancel"
+	}
 	if m.formKind == FormAPIKey {
 		help = "enter: confirm  esc: cancel"
 	}
@@ -619,7 +852,80 @@ func (m RootModel) renderForm(width, height int) string {
 	if m.formKind == FormAPIModel {
 		help = "1: deepseek-v4-flash │ 2: deepseek-v4-pro"
 	}
-	return ui.Panel(title, body+"\n\n"+help, width-4, height)
+
+	if isInput && (m.formKind == FormNewFeatureName || m.formKind == FormInitName || m.formKind == FormAPIKey) {
+		if body == "" {
+			body = m.textInput.View()
+		}
+		return renderInlineForm(title, body, help, width, height)
+	}
+
+	// Textarea forms: use inline layout with textarea occupying the full body
+	if body == "" {
+		body = m.textInput.View()
+	}
+	return renderInlineForm(title, body, help, width, height)
+}
+
+// renderInlineForm renders a form with title bar + input visible + help footer.
+func renderInlineForm(title, inputView, help string, width, height int) string {
+	innerW := width - 4
+	if innerW < 1 {
+		innerW = 1
+	}
+
+	var b strings.Builder
+	// Top border with title
+	b.WriteString("┌─ ")
+	b.WriteString(title)
+	b.WriteString(" ")
+	tpad := innerW - lipgloss.Width(title) - 3
+	if tpad < 0 {
+		tpad = 0
+	}
+	b.WriteString(strings.Repeat("─", tpad))
+	b.WriteString("┐\n")
+
+	// Split input into lines and render each within the border
+	inputLines := strings.Split(inputView, "\n")
+	bodyH := height - 4 // reserve 2 lines for top/bottom border + 1 for help
+	if bodyH < 1 {
+		bodyH = 1
+	}
+
+	for i := 0; i < bodyH; i++ {
+		line := ""
+		if i < len(inputLines) {
+			line = inputLines[i]
+		}
+		visible := lipgloss.Width(line)
+		b.WriteString("│ ")
+		b.WriteString(line)
+		rpad := innerW - visible
+		if rpad < 0 {
+			rpad = 0
+		}
+		b.WriteString(strings.Repeat(" ", rpad))
+		b.WriteString(" │\n")
+	}
+
+	// Help line
+	helpVisible := lipgloss.Width(help)
+	b.WriteString("│ ")
+	b.WriteString(ui.StyleDim.Render(help))
+	hpad := innerW - helpVisible
+	if hpad < 0 {
+		hpad = 0
+	}
+	b.WriteString(strings.Repeat(" ", hpad))
+	b.WriteString(" │\n")
+
+	// Bottom border
+	b.WriteString("└")
+	b.WriteString(strings.Repeat("─", innerW))
+	b.WriteString("┘")
+
+	return b.String()
 }
 
 func (m RootModel) renderAction(width, height int) string {
@@ -740,6 +1046,20 @@ func detectQuestionPrompt(text string) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+// buildCheckpointAnswerBlock builds a text block of checkpoint Q&A pairs for the LLM finalize pass.
+func buildCheckpointAnswerBlock(questions []workflow.CheckpointQuestion, answers []string) string {
+	var b strings.Builder
+	b.WriteString("== User Answers to Decision Checkpoints ==\n")
+	for i, q := range questions {
+		b.WriteString(fmt.Sprintf("\nQ%d: %s\n", i+1, q.Question))
+		if i < len(answers) {
+			b.WriteString(fmt.Sprintf("Answer: %s\n", answers[i]))
+		}
+	}
+	b.WriteString("\nGenerate the final document now, incorporating these answers.")
+	return b.String()
 }
 
 func (m RootModel) renderStatusBanner(width int) string {

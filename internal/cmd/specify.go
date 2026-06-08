@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
+	"strings"
+
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/project"
-	"github.com/pedrobelmino/tui-sdd-open-api/internal/prompts"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/state"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/templates"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/workflow"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +19,9 @@ var specifyBrief string
 var specifyCmd = &cobra.Command{
 	Use:   "specify [feature-name]",
 	Short: "Generate spec.md for a feature using local model",
-	Args:  cobra.ExactArgs(1),
+	Long: `Generates spec.md by first producing a draft, then asking clarifying
+questions interactively. Answer the questions to improve the final spec.`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, err := project.RequireRoot()
 		if err != nil {
@@ -26,12 +29,6 @@ var specifyCmd = &cobra.Command{
 		}
 
 		feature := args[0]
-		cfg := loadCfg()
-		client := newGenClient(cfg)
-
-		if !client.Reachable(context.Background()) {
-			return fmt.Errorf("ollama not reachable at %s", cfg.OllamaHost)
-		}
 
 		brief := specifyBrief
 		if brief == "" {
@@ -41,17 +38,14 @@ var specifyCmd = &cobra.Command{
 			return fmt.Errorf("feature description required")
 		}
 
-		system := prompts.SpecifySystem(ctx.Root)
-		user := fmt.Sprintf("Feature name: %s\n\nDescription:\n%s\n\nGenerate complete spec.md now.", feature, brief)
+		svc := workflow.New()
+		if !svc.Reachable(context.Background()) {
+			return fmt.Errorf("ollama not reachable")
+		}
 
-		fmt.Fprintln(os.Stderr, "Generating spec with", cfg.Model, "...")
-		out, usage, err := client.ChatStream(context.Background(), ollama.ChatRequest{
-			Model: cfg.Model,
-			Messages: []ollama.ChatMessage{
-				{Role: "system", Content: system},
-				{Role: "user", Content: user},
-			},
-		}, func(chunk string) {
+		// Pass 1: generate draft with clarifying questions
+		fmt.Fprintln(os.Stderr, "Generating draft spec with", svc.Model(), "...")
+		draft, usage, err := svc.SpecifyDraft(context.Background(), ctx.Root, feature, brief, func(chunk string) {
 			fmt.Fprint(os.Stdout, chunk)
 		})
 		fmt.Fprintln(os.Stdout)
@@ -59,17 +53,37 @@ var specifyCmd = &cobra.Command{
 			return err
 		}
 
+		// Check for clarifying questions — ask user if found
+		questions := workflow.ExtractQuestions(draft)
+		if len(questions) > 0 {
+			fmt.Fprintln(os.Stderr, "")
+			fmt.Fprintln(os.Stderr, workflow.FormatQuestionsForDisplay(questions))
+			answers := promptMultiline("Your answers")
+			if strings.TrimSpace(answers) != "" {
+				fmt.Fprintln(os.Stderr, "Generating final spec with answers...")
+				usage2, err2 := svc.SpecifyFinalize(context.Background(), ctx.Root, feature, brief, draft, answers, func(chunk string) {
+					fmt.Fprint(os.Stdout, chunk)
+				})
+				fmt.Fprintln(os.Stdout)
+				if err2 != nil {
+					return err2
+				}
+				usage.PromptTokens += usage2.PromptTokens
+				usage.CompletionTokens += usage2.CompletionTokens
+				printOK(fmt.Sprintf("wrote .specs/features/%s/spec.md (%d+%d tokens)", feature, usage.PromptTokens, usage.CompletionTokens))
+				return nil
+			}
+		}
+
+		// No clarifying questions (or user skipped): write draft directly as final
 		featureDir := filepath.Join(ctx.Root, ".specs/features", feature)
 		if err := os.MkdirAll(featureDir, 0o755); err != nil {
 			return err
 		}
-
 		specPath := filepath.Join(featureDir, "spec.md")
-		content := templates.Spec(feature, out)
-		if err := os.WriteFile(specPath, []byte(content), 0o644); err != nil {
+		if err := os.WriteFile(specPath, []byte(templates.Spec(feature, draft)), 0o644); err != nil {
 			return err
 		}
-
 		statePath := filepath.Join(ctx.Root, ".specs/project/STATE.md")
 		_ = state.UpdateCurrentWork(statePath, feature+" — spec generated")
 		printOK(fmt.Sprintf("wrote %s (%d+%d tokens)", specPath, usage.PromptTokens, usage.CompletionTokens))

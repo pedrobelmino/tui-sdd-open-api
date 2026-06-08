@@ -32,6 +32,7 @@ type KeyMap struct {
 	RunTask      key.Binding
 	Back         key.Binding
 	Submit       key.Binding
+	TextAreaSubmit key.Binding
 	CancelAction key.Binding
 	CopyLog      key.Binding
 }
@@ -63,6 +64,7 @@ func DefaultKeyMap() KeyMap {
 		RunTask:      key.NewBinding(key.WithKeys("e"), key.WithHelp("e", "run task")),
 		Back:         key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "back")),
 		Submit:       key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "submit")),
+		TextAreaSubmit: key.NewBinding(key.WithKeys("ctrl+s"), key.WithHelp("ctrl+s", "submit")),
 		CancelAction: key.NewBinding(key.WithKeys("x"), key.WithHelp("x", "cancel")),
 		CopyLog:      key.NewBinding(key.WithKeys("y"), key.WithHelp("y", "copy log")),
 	}

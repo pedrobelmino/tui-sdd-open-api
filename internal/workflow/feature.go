@@ -712,3 +712,216 @@ func truncate(s string, n int) string {
 	}
 	return s[:n] + "..."
 }
+
+// WriteSpecResult writes a spec.md file from draft output (no LLM call).
+func WriteSpecResult(projectRoot, feature, draft string) error {
+	featureDir := filepath.Join(projectRoot, ".specs/features", feature)
+	if err := os.MkdirAll(featureDir, 0o755); err != nil {
+		return err
+	}
+	specPath := filepath.Join(featureDir, "spec.md")
+	return os.WriteFile(specPath, []byte(templates.Spec(feature, draft)), 0o644)
+}
+
+// WriteDesignResult writes a design.md file from draft output (no LLM call).
+func WriteDesignResult(projectRoot, feature, draft string) error {
+	designPath := filepath.Join(projectRoot, ".specs/features", feature, "design.md")
+	return os.WriteFile(designPath, []byte(templates.Design(feature, draft)), 0o644)
+}
+
+// WriteTasksResult writes a tasks.md file from draft output (no LLM call).
+func WriteTasksResult(projectRoot, feature, draft string) error {
+	tasksPath := filepath.Join(projectRoot, ".specs/features", feature, "tasks.md")
+	return os.WriteFile(tasksPath, []byte(templates.Tasks(draft)), 0o644)
+}
+
+// ...existing draft/finalize methods... does pass 1 of interactive specify — generates a draft with
+// clarifying questions, returns raw markdown (does NOT write to disk).
+func (s *Service) SpecifyDraft(ctx context.Context, projectRoot, feature, brief string, onChunk func(string)) (string, ollama.TokenUsage, error) {
+	if !s.Reachable(ctx) {
+		return "", ollama.TokenUsage{}, fmt.Errorf("ollama not reachable at %s", s.cfg.OllamaHost)
+	}
+	if strings.TrimSpace(brief) == "" {
+		return "", ollama.TokenUsage{}, fmt.Errorf("feature description required")
+	}
+
+	system := prompts.SpecifySystem(projectRoot)
+	user := fmt.Sprintf("Feature name: %s\n\nDescription:\n%s\n\nGenerate complete spec.md now.", feature, brief)
+
+	out, usage, err := s.client.ChatStream(ctx, ollama.ChatRequest{
+		Model: s.cfg.Model,
+		Messages: []ollama.ChatMessage{
+			{Role: "system", Content: system},
+			{Role: "user", Content: user},
+		},
+	}, onChunk)
+	return out, usage, err
+}
+
+// SpecifyFinalize does pass 2 of interactive specify — takes the draft + user
+// answers, sends to LLM, and writes the final spec.md to disk.
+func (s *Service) SpecifyFinalize(ctx context.Context, projectRoot, feature, brief, draft, answers string, onChunk func(string)) (ollama.TokenUsage, error) {
+	if !s.Reachable(ctx) {
+		return ollama.TokenUsage{}, fmt.Errorf("ollama not reachable at %s", s.cfg.OllamaHost)
+	}
+
+	system := prompts.SpecifySystem(projectRoot)
+	extra := ""
+	if strings.TrimSpace(brief) != "" {
+		extra = fmt.Sprintf("== Original Description ==\n%s", brief)
+	}
+	user := BuildFinalizeUserMsg(feature, draft, answers, extra)
+
+	out, usage, err := s.client.ChatStream(ctx, ollama.ChatRequest{
+		Model: s.cfg.Model,
+		Messages: []ollama.ChatMessage{
+			{Role: "system", Content: system},
+			{Role: "user", Content: user},
+		},
+	}, onChunk)
+	if err != nil {
+		return usage, err
+	}
+
+	featureDir := filepath.Join(projectRoot, ".specs/features", feature)
+	if err := os.MkdirAll(featureDir, 0o755); err != nil {
+		return usage, err
+	}
+	specPath := filepath.Join(featureDir, "spec.md")
+	if err := os.WriteFile(specPath, []byte(templates.Spec(feature, out)), 0o644); err != nil {
+		return usage, err
+	}
+
+	statePath := filepath.Join(projectRoot, ".specs/project/STATE.md")
+	_ = state.UpdateCurrentWork(statePath, feature+" — spec generated (interactive)")
+	return usage, nil
+}
+
+// DesignDraft does pass 1 of interactive design — generates a draft with
+// clarifying questions, returns raw markdown (does NOT write to disk).
+func (s *Service) DesignDraft(ctx context.Context, projectRoot, feature string, onChunk func(string)) (string, ollama.TokenUsage, error) {
+	if !s.Reachable(ctx) {
+		return "", ollama.TokenUsage{}, fmt.Errorf("ollama not reachable at %s", s.cfg.OllamaHost)
+	}
+
+	featureDir := filepath.Join(projectRoot, ".specs/features", feature)
+	specPath := filepath.Join(featureDir, "spec.md")
+	specData, err := os.ReadFile(specPath)
+	if err != nil {
+		return "", ollama.TokenUsage{}, fmt.Errorf("read spec.md: %w (run specify first)", err)
+	}
+
+	user := fmt.Sprintf("Feature: %s\n\nspec.md:\n%s\n\nGenerate complete design.md now.", feature, string(specData))
+	if contextData, err := os.ReadFile(filepath.Join(featureDir, "context.md")); err == nil {
+		user += "\n\ncontext.md:\n" + string(contextData)
+	}
+	if concernsData, err := os.ReadFile(filepath.Join(projectRoot, ".specs/codebase/CONCERNS.md")); err == nil {
+		user += "\n\nCONCERNS.md:\n" + truncate(string(concernsData), 4000)
+	}
+
+	system := prompts.DesignSystem(projectRoot)
+	out, usage, err := s.client.ChatStream(ctx, ollama.ChatRequest{
+		Model: s.cfg.Model,
+		Messages: []ollama.ChatMessage{
+			{Role: "system", Content: system},
+			{Role: "user", Content: user},
+		},
+	}, onChunk)
+	return out, usage, err
+}
+
+// DesignFinalize does pass 2 of interactive design — takes the draft + user
+// answers, sends to LLM, and writes the final design.md to disk.
+func (s *Service) DesignFinalize(ctx context.Context, projectRoot, feature, draft, answers string, onChunk func(string)) (ollama.TokenUsage, error) {
+	if !s.Reachable(ctx) {
+		return ollama.TokenUsage{}, fmt.Errorf("ollama not reachable at %s", s.cfg.OllamaHost)
+	}
+
+	system := prompts.DesignSystem(projectRoot)
+	user := BuildFinalizeUserMsg(feature, draft, answers)
+
+	out, usage, err := s.client.ChatStream(ctx, ollama.ChatRequest{
+		Model: s.cfg.Model,
+		Messages: []ollama.ChatMessage{
+			{Role: "system", Content: system},
+			{Role: "user", Content: user},
+		},
+	}, onChunk)
+	if err != nil {
+		return usage, err
+	}
+
+	designPath := filepath.Join(projectRoot, ".specs/features", feature, "design.md")
+	if err := os.WriteFile(designPath, []byte(templates.Design(feature, out)), 0o644); err != nil {
+		return usage, err
+	}
+
+	statePath := filepath.Join(projectRoot, ".specs/project/STATE.md")
+	_ = state.UpdateCurrentWork(statePath, feature+" — design generated (interactive)")
+	return usage, nil
+}
+
+// TasksDraft does pass 1 of interactive tasks — generates a draft with
+// clarifying questions, returns raw markdown (does NOT write to disk).
+func (s *Service) TasksDraft(ctx context.Context, projectRoot, feature string, onChunk func(string)) (string, ollama.TokenUsage, error) {
+	if !s.Reachable(ctx) {
+		return "", ollama.TokenUsage{}, fmt.Errorf("ollama not reachable at %s", s.cfg.OllamaHost)
+	}
+
+	specPath := filepath.Join(projectRoot, ".specs/features", feature, "spec.md")
+	specData, err := os.ReadFile(specPath)
+	if err != nil {
+		return "", ollama.TokenUsage{}, fmt.Errorf("read spec.md: %w (run specify first)", err)
+	}
+
+	system := prompts.TasksSystem(projectRoot)
+	user := fmt.Sprintf("Feature: %s\n\nspec.md:\n%s\n\nGenerate complete tasks.md now.", feature, string(specData))
+	tasksPath := filepath.Join(projectRoot, ".specs/features", feature, "tasks.md")
+	if existingTasks, err := os.ReadFile(tasksPath); err == nil {
+		if onChunk != nil {
+			onChunk("\n📄 existing tasks.md found — evolving current document\n")
+		}
+		user += "\n\ntasks.md (current version to evolve):\n" + truncate(string(existingTasks), 7000)
+	}
+
+	out, usage, err := s.client.ChatStream(ctx, ollama.ChatRequest{
+		Model: s.cfg.Model,
+		Messages: []ollama.ChatMessage{
+			{Role: "system", Content: system},
+			{Role: "user", Content: user},
+		},
+	}, onChunk)
+	return out, usage, err
+}
+
+// TasksFinalize does pass 2 of interactive tasks — takes the draft + user
+// answers, sends to LLM, and writes the final tasks.md to disk.
+func (s *Service) TasksFinalize(ctx context.Context, projectRoot, feature, draft, answers string, onChunk func(string)) (ollama.TokenUsage, error) {
+	if !s.Reachable(ctx) {
+		return ollama.TokenUsage{}, fmt.Errorf("ollama not reachable at %s", s.cfg.OllamaHost)
+	}
+
+	system := prompts.TasksSystem(projectRoot)
+	user := BuildFinalizeUserMsg(feature, draft, answers)
+
+	out, usage, err := s.client.ChatStream(ctx, ollama.ChatRequest{
+		Model: s.cfg.Model,
+		Messages: []ollama.ChatMessage{
+			{Role: "system", Content: system},
+			{Role: "user", Content: user},
+		},
+	}, onChunk)
+	if err != nil {
+		return usage, err
+	}
+
+	tasksPath := filepath.Join(projectRoot, ".specs/features", feature, "tasks.md")
+	content := templates.Tasks(out)
+	if err := os.WriteFile(tasksPath, []byte(content), 0o644); err != nil {
+		return usage, err
+	}
+
+	statePath := filepath.Join(projectRoot, ".specs/project/STATE.md")
+	_ = state.UpdateCurrentWork(statePath, feature+" — tasks generated (interactive)")
+	return usage, nil
+}

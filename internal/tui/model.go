@@ -18,6 +18,7 @@ import (
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/tokens"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/tui/views"
 	"github.com/pedrobelmino/tui-sdd-open-api/internal/ui"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/workflow"
 )
 
 var spinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
@@ -65,6 +66,18 @@ type RootModel struct {
 	taskCursor       int
 	pendingFeature string
 	pendingInitName string
+	pendingDraft   string // raw draft output from pass 1 of interactive specify/design/tasks
+
+	// Checkpoint questions (one-at-a-time interactive flow)
+	checkpointQuestions []workflow.CheckpointQuestion
+	checkpointAnswers   []string
+	checkpointIndex     int
+	checkpointPass2Kind ActionKind
+
+	// Implement-all interactive flow (task by task)
+	implementTaskIDs  []string
+	implementTaskIdx  int
+	isImplementAllFlow bool
 
 	formKind         FormKind
 	formReturnScreen Screen
@@ -288,6 +301,7 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.actionRunning = false
 		m.actionCancel = nil
+		m.pendingDraft = ""
 		m.actionPhase = ""
 		if msg.Err != nil {
 			m.statusMsg = msg.Err.Error()
@@ -302,6 +316,61 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if strings.TrimSpace(finishText) == "" {
 				finishText = m.actionLog
 			}
+
+			// Interactive specify/design/tasks: check for clarifying questions in draft output
+			if msg.Kind == ActionSpecify || msg.Kind == ActionDesign || msg.Kind == ActionTasks {
+				draft := msg.Output
+				// Try checkpoint questions first (one-at-a-time multi-choice)
+				checkpoints := workflow.ExtractCheckpointQuestions(draft)
+				if len(checkpoints) > 0 {
+					m.pendingDraft = draft
+					m.checkpointQuestions = checkpoints
+					m.checkpointAnswers = nil
+					m.checkpointIndex = 0
+					switch msg.Kind {
+					case ActionSpecify:
+						m.checkpointPass2Kind = ActionSpecifyPass2
+					case ActionDesign:
+						m.checkpointPass2Kind = ActionDesignPass2
+					case ActionTasks:
+						m.checkpointPass2Kind = ActionTasksPass2
+					}
+					m.actionNeedsInput = true
+					m.actionPhase = "awaiting-input"
+					m.actionLog += fmt.Sprintf("\n\n? The model has %d decision checkpoint(s) — answer one at a time (%d+%d tokens)",
+						len(checkpoints), msg.Usage.PromptTokens, msg.Usage.CompletionTokens)
+					m = m.scrollActionToBottom()
+					m.selectedFeature = msg.Feature
+					m = m.openFormWithReturn(FormCheckpointQuestion, ScreenAction)
+					cmds := []tea.Cmd{loadProjectCmd()}
+					if m.actionReturnScreen == ScreenFeatureDetail {
+						cmds = append(cmds, m.loadFeatureTasksCmd(msg.Feature))
+					}
+					return m, tea.Batch(cmds...)
+				}
+				// Fall back to generic clarifying questions (textarea mode)
+				questions := workflow.ExtractQuestions(draft)
+				if len(questions) > 0 {
+					m.pendingDraft = draft
+					m.actionNeedsInput = true
+					m.actionQuestion = workflow.FormatQuestionsForDisplay(questions)
+					m.actionPhase = "awaiting-input"
+					m.actionLog += "\n\n" + m.actionQuestion
+					m.actionLog += fmt.Sprintf("\n\n? The model has clarifying questions — press enter to answer (%d+%d tokens)",
+						msg.Usage.PromptTokens, msg.Usage.CompletionTokens)
+					m = m.scrollActionToBottom()
+					m.selectedFeature = msg.Feature
+					cmds := []tea.Cmd{loadProjectCmd()}
+					if m.actionReturnScreen == ScreenFeatureDetail {
+						cmds = append(cmds, m.loadFeatureTasksCmd(msg.Feature))
+					}
+					return m, tea.Batch(cmds...)
+				}
+				// No clarifying questions: the draft is the final version.
+				// For pass 1 actions, the draft was already saved by Draft methods
+				// or needs to be saved now depending on action type.
+			}
+
 			if msg.Kind != ActionAsk {
 				if q, ok := detectQuestionPrompt(finishText); ok {
 					m.actionNeedsInput = true
@@ -318,6 +387,70 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Batch(cmds...)
 				}
 			}
+
+			// Implement-all flow: after each task run, show next task or mark done
+			if msg.Kind == ActionRun && m.isImplementAllFlow {
+				m.implementTaskIdx++
+				if m.implementTaskIdx < len(m.implementTaskIDs) {
+					taskLabel := m.implementTaskIDs[m.implementTaskIdx]
+					m.checkpointQuestions = []workflow.CheckpointQuestion{{
+						Question: fmt.Sprintf("Next task:\n\n%s\n\nProceed with implementation?", taskLabel),
+						Options:  []string{"Execute", "Skip", "Implement All"},
+					}}
+					m.checkpointAnswers = nil
+					m.checkpointIndex = 0
+					m.actionNeedsInput = true
+					m.actionPhase = "awaiting-input"
+					m.actionLog += "\n\nPress Enter to implement next task"
+					m = m.scrollActionToBottom()
+					cmds := []tea.Cmd{loadProjectCmd()}
+					if m.actionReturnScreen == ScreenFeatureDetail {
+						cmds = append(cmds, m.loadFeatureTasksCmd(msg.Feature))
+					}
+					return m, tea.Batch(cmds...)
+				}
+				// All tasks done — fall through to "done" message
+				m.isImplementAllFlow = false
+				m.actionLog += "\n\n✓ all tasks implemented"
+			}
+
+			// Implement plan: parse task list and set up interactive flow
+			if msg.Kind == ActionImplementPlan {
+				taskLines := strings.Split(strings.TrimSpace(msg.Output), "\n")
+				pending := taskLines[:0]
+				for _, l := range taskLines {
+					if strings.TrimSpace(l) != "" {
+						pending = append(pending, l)
+					}
+				}
+				if len(pending) == 0 {
+					m.actionLog += "\n\n✓ all tasks already implemented"
+					m.actionPhase = "done"
+				} else {
+					m.implementTaskIDs = pending
+					m.implementTaskIdx = 0
+					m.isImplementAllFlow = true
+					taskLabel := pending[0]
+					m.checkpointQuestions = []workflow.CheckpointQuestion{{
+						Question: fmt.Sprintf("First pending task:\n\n%s\n\nProceed with implementation?", taskLabel),
+						Options:  []string{"Execute", "Skip", "Implement All"},
+					}}
+					m.checkpointAnswers = nil
+					m.checkpointIndex = 0
+					m.actionNeedsInput = true
+					m.actionPhase = "awaiting-input"
+					m.actionLog += fmt.Sprintf("\n\n? %d code task(s) pending — implement one at a time", len(pending))
+					m = m.scrollActionToBottom()
+					m.selectedFeature = msg.Feature
+					m = m.openFormWithReturn(FormCheckpointQuestion, ScreenAction)
+					cmds := []tea.Cmd{loadProjectCmd()}
+					if m.actionReturnScreen == ScreenFeatureDetail {
+						cmds = append(cmds, m.loadFeatureTasksCmd(msg.Feature))
+					}
+					return m, tea.Batch(cmds...)
+				}
+			}
+
 			m.actionNeedsInput = false
 			m.actionQuestion = ""
 			m.actionLog += fmt.Sprintf("\n\n✓ done (%d+%d tokens)",
@@ -370,7 +503,11 @@ func (m RootModel) View() string {
 	switch m.screen {
 	case ScreenForm:
 		main = m.renderForm(w, mainH)
-		footer = "enter: submit  esc: cancel"
+		if isTextAreaForm(m.formKind) {
+			footer = "ctrl+s: submit  esc: cancel"
+		} else {
+			footer = "enter: submit  esc: cancel"
+		}
 	case ScreenAction:
 		main = m.renderAction(w, mainH)
 		if m.actionRunning {

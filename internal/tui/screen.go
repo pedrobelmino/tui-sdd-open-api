@@ -25,6 +25,7 @@ const (
 	FormAPIKey
 	FormAPIPersist
 	FormAPIModel
+	FormCheckpointQuestion
 )
 
 // ActionKind identifies a running workflow action.
@@ -33,9 +34,13 @@ type ActionKind int
 const (
 	ActionNone ActionKind = iota
 	ActionSpecify
+	ActionSpecifyPass2
 	ActionDesign
+	ActionDesignPass2
 	ActionTasks
+	ActionTasksPass2
 	ActionImplement
+	ActionImplementPlan
 	ActionRun
 	ActionQuickTask
 	ActionAsk

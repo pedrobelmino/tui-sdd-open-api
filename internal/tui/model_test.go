@@ -46,7 +46,7 @@ func TestModel_FeaturesImplementKeyStartsAction(t *testing.T) {
 
 	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'e'}})
 	m2 := updated.(RootModel)
-	if m2.screen != ScreenAction || m2.actionKind != ActionImplement {
+	if m2.screen != ScreenAction || m2.actionKind != ActionImplementPlan {
 		t.Fatalf("expected implement action, got screen=%v kind=%v", m2.screen, m2.actionKind)
 	}
 }
