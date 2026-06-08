@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ollama"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
 )
 
 const testWidth = 80

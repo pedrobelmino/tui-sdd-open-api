@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ollama"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
 )
 
 // Definitions returns the full list of file-operation tool definitions.

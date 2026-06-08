@@ -103,7 +103,7 @@ Phase 5:  T19 → T20 → T22
 - Skill: NONE
 
 **Done when**:
-- [ ] Module `github.com/pedrobelmino/tui-sdd-llm-local` with Go 1.22+
+- [ ] Module `github.com/pedrobelmino/tui-sdd-open-api` with Go 1.22+
 - [ ] `go build -o /dev/null ./cmd/tsll` succeeds
 - [ ] Gate check passes: `go build ./... && go vet ./...`
 

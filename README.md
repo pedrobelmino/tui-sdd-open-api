@@ -7,8 +7,8 @@
 > Ideia → spec → design → tasks → implementação — tudo no mesmo lugar, com tokens e VRAM na tela.
 
 ```bash
-git clone https://github.com/pedrobelmino/tui-sdd-llm-local.git
-cd tui-sdd-llm-local
+git clone https://github.com/pedrobelmino/tui-sdd-open-api.git
+cd tui-sdd-open-api
 make build          # instala em ~/.local/bin/tsll
 tsll doctor         # smoke test: Ollama + GPU + .specs/
 tsll                # abre o dashboard
@@ -153,8 +153,8 @@ Todos os subcomandos funcionam fora da TUI — úteis para scripts e automação
 ### 1. Build
 
 ```bash
-git clone https://github.com/pedrobelmino/tui-sdd-llm-local.git
-cd tui-sdd-llm-local
+git clone https://github.com/pedrobelmino/tui-sdd-open-api.git
+cd tui-sdd-open-api
 make build
 # binário em bin/tsll e copiado para ~/.local/bin/tsll
 ```

@@ -2,7 +2,7 @@
 
 ## Problem Statement
 
-O tui-sdd-llm-local ainda não existe como binário executável. O dev solo precisa de mais que subcomandos estáticos: uma **CLI interativa estilo k9s** que centralize o workflow spec-driven e mostre em tempo real o que está acontecendo com tokens, modelo local e GPU. Sem esse esqueleto TUI + Cobra, não há onde implementar `init`, `specify`, `tasks` ou `run`.
+O tui-sdd-open-api ainda não existe como binário executável. O dev solo precisa de mais que subcomandos estáticos: uma **CLI interativa estilo k9s** que centralize o workflow spec-driven e mostre em tempo real o que está acontecendo com tokens, modelo local e GPU. Sem esse esqueleto TUI + Cobra, não há onde implementar `init`, `specify`, `tasks` ou `run`.
 
 ## Goals
 
@@ -197,7 +197,7 @@ O tui-sdd-llm-local ainda não existe como binário executável. O dev solo prec
 ## Layout Reference (k9s-inspired)
 
 ```
-┌─ tsll v0.1.0 ── tui-sdd-llm-local ── qwen2.5-coder ─────────────────────────────┐
+┌─ tsll v0.1.0 ── tui-sdd-open-api ── qwen2.5-coder ─────────────────────────────┐
 │ [1] Overview  [2] Features  [3] Models  [4] Metrics                  │
 ├──────────────────────────────────────────────────────────────────────┤
 │                                                                      │

@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-06-07
-**Current Work:** Renomeado para tui-sdd-llm-local — publicado em github.com/pedrobelmino/tui-sdd-llm-local
+**Current Work:** Renomeado para tui-sdd-open-api — publicado em github.com/pedrobelmino/tui-sdd-open-api
 
 ---
 
@@ -23,7 +23,7 @@
 
 ### AD-003: Aderência à skill tlc-spec-driven (2026-06-06)
 
-**Decision:** tui-sdd-llm-local implementa o workflow da skill já instalada no projeto
+**Decision:** tui-sdd-open-api implementa o workflow da skill já instalada no projeto
 **Reason:** Skill define estrutura `.specs/`, fases adaptativas e convenções — evita reinventar
 **Trade-off:** Acoplamento à estrutura da skill (versão 2.0.0)
 **Impact:** Templates, comandos e prompts seguem referências em `.cursor/skills/tlc-spec-driven/`
@@ -98,9 +98,9 @@
 **Trade-off:** Menos altura para painel principal; polling Ollama a cada 2s
 **Impact:** `internal/tui/page.go`, `internal/tui/views/monitor.go`, `tickOllamaCmd`
 
-### AD-015: Renomeação bel-cli → tui-sdd-llm-local (2026-06-07)
+### AD-015: Renomeação bel-cli → tui-sdd-open-api (2026-06-07)
 
-**Decision:** Projeto renomeado; binário/comando `tsll`; módulo `github.com/pedrobelmino/tui-sdd-llm-local`; config `~/.tsll/`
+**Decision:** Projeto renomeado; binário/comando `tsll`; módulo `github.com/pedrobelmino/tui-sdd-open-api`; config `~/.tsll/`
 **Reason:** Publicação no GitHub do autor; nome descritivo (TUI + spec-driven + LLM local)
 **Trade-off:** Breaking change para quem usava `bel` / `~/.bel/` / `BEL_*`
 **Impact:** `cmd/tsll/`, README.md, AGENTS.md, imports Go, env `TSLL_*`
@@ -165,7 +165,7 @@ O parser de nomes AMD precisa só strip-ar `[hex_id]` quando o conteúdo entre `
 | 15  | Monitor strip em todas as telas + tick Ollama 2s         | 2026-06-07 | —      | ✅ Done  |
 | 16  | Scroll j/k/g/G no painel Action durante streaming        | 2026-06-07 | —      | ✅ Done  |
 | 17  | Brownfield mapping: 7 docs em `.specs/codebase/`         | 2026-06-07 | —      | ✅ Done  |
-| 18  | Rename bel-cli → tui-sdd-llm-local + README + AGENTS.md  | 2026-06-07 | —      | ✅ Done  |
+| 18  | Rename bel-cli → tui-sdd-open-api + README + AGENTS.md  | 2026-06-07 | —      | ✅ Done  |
 
 ---
 

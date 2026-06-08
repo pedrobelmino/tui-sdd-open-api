@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/project"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/project"
 )
 
 func TestExtractTaskBlock_NumberedHeader(t *testing.T) {

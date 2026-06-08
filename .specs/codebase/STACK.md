@@ -5,7 +5,7 @@
 ## Core
 
 - **Language:** Go 1.22 (`go.mod`)
-- **Module:** `github.com/pedrobelmino/tui-sdd-llm-local`
+- **Module:** `github.com/pedrobelmino/tui-sdd-open-api`
 - **Runtime:** Binário nativo Linux amd64 (sem servidor embutido)
 - **Package manager:** Go modules (`go mod`)
 - **Build:** `Makefile` — `make build`, `make install`, `make test`

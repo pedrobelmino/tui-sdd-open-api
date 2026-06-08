@@ -37,7 +37,7 @@ func LoadReference(projectRoot, name string) string {
 // SpecifySystem builds the system prompt for tsll specify.
 func SpecifySystem(projectRoot string) string {
 	specRef := LoadReference(projectRoot, "specify.md")
-	return strings.TrimSpace(fmt.Sprintf(`You are tui-sdd-llm-local, a spec-driven development assistant.
+	return strings.TrimSpace(fmt.Sprintf(`You are tui-sdd-open-api, a spec-driven development assistant.
 Follow tlc-spec-driven specify conventions. Output a complete spec.md in markdown.
 Use WHEN/THEN/SHALL acceptance criteria, P1/P2/P3 user stories, requirement IDs like FEAT-01.
 Include Problem Statement, Goals, Out of Scope, User Stories, Edge Cases, Requirement Traceability, Success Criteria.
@@ -60,7 +60,7 @@ Reference:
 // DesignSystem builds the system prompt for tsll design.
 func DesignSystem(projectRoot string) string {
 	designRef := LoadReference(projectRoot, "design.md")
-	return strings.TrimSpace(fmt.Sprintf(`You are tui-sdd-llm-local. Define HOW to build the feature in design.md format.
+	return strings.TrimSpace(fmt.Sprintf(`You are tui-sdd-open-api. Define HOW to build the feature in design.md format.
 Include Architecture Overview (mermaid when helpful), Code Reuse Analysis, Components, Data Models if applicable,
 Error Handling Strategy, and Tech Decisions. Reuse existing codebase patterns. Never fabricate APIs or behaviors.
 If an existing design.md is provided in context, EVOLVE it instead of recreating it:
@@ -82,7 +82,7 @@ Reference:
 // TasksSystem builds the system prompt for tsll tasks.
 func TasksSystem(projectRoot string) string {
 	tasksRef := LoadReference(projectRoot, "tasks.md")
-	return strings.TrimSpace(fmt.Sprintf(`You are tui-sdd-llm-local. Break the feature spec into atomic tasks in tasks.md format.
+	return strings.TrimSpace(fmt.Sprintf(`You are tui-sdd-open-api. Break the feature spec into atomic tasks in tasks.md format.
 Each task: What, Where, Depends on, Done when, Tests, Gate. Use T1, T2... numbering.
 Include Execution Plan phases and Requirement Traceability.
 If an existing tasks.md is provided in context, EVOLVE it:
@@ -103,7 +103,7 @@ Reference:
 
 // AskSystem builds the system prompt for read-only feature Q&A.
 func AskSystem(projectRoot string) string {
-	return strings.TrimSpace(`You are tui-sdd-llm-local answering questions about a feature.
+	return strings.TrimSpace(`You are tui-sdd-open-api answering questions about a feature.
 
 Rules:
 - Use ONLY the provided spec.md, design.md, tasks.md, and project tech stack.
@@ -119,7 +119,7 @@ Rules:
 func ImplementSystem(projectRoot string) string {
 	implRef := LoadReference(projectRoot, "implement.md")
 	principles := LoadReference(projectRoot, "coding-principles.md")
-	return strings.TrimSpace(fmt.Sprintf(`You are tui-sdd-llm-local implementing a complete feature according to its spec.
+	return strings.TrimSpace(fmt.Sprintf(`You are tui-sdd-open-api implementing a complete feature according to its spec.
 
 Rules:
 - Use file tools to create and edit files. Do NOT describe changes.
@@ -148,7 +148,7 @@ Reference:
 // RunSystem builds the system prompt for tsll run task execution.
 func RunSystem(projectRoot, taskDesc, specContext string) string {
 	principles := LoadReference(projectRoot, "coding-principles.md")
-	return strings.TrimSpace(fmt.Sprintf(`You are tui-sdd-llm-local implementing a single atomic task.
+	return strings.TrimSpace(fmt.Sprintf(`You are tui-sdd-open-api implementing a single atomic task.
 
 Rules:
 - Use file tools to create and edit files. Do NOT describe changes.

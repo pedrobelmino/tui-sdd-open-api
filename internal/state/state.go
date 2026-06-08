@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/project"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/project"
 )
 
 var (

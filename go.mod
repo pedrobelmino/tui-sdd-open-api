@@ -1,4 +1,4 @@
-module github.com/pedrobelmino/tui-sdd-llm-local
+module github.com/pedrobelmino/tui-sdd-open-api
 
 go 1.22
 

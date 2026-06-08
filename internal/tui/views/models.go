@@ -7,8 +7,8 @@ import (
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ollama"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ui"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ui"
 )
 
 // ModelsData is the input subset for the Models view renderer.

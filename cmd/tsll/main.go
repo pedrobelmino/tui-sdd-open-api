@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/cmd"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/cmd"
 )
 
 func main() {

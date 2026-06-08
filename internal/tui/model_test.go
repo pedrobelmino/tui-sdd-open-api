@@ -5,11 +5,11 @@ import (
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/gpu"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ollama"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/project"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/system"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/tokens"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/gpu"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/project"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/system"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/tokens"
 )
 
 func newTestModel() RootModel {
@@ -21,7 +21,7 @@ func newTestModel() RootModel {
 
 func TestModel_ViewOverview(t *testing.T) {
 	m := newTestModel()
-	m.project = project.ProjectContext{Valid: true, Root: "/tmp/tui-sdd-llm-local", CurrentWork: "test", Milestone: "M1"}
+	m.project = project.ProjectContext{Valid: true, Root: "/tmp/tui-sdd-open-api", CurrentWork: "test", Milestone: "M1"}
 	out := m.View()
 	if !strings.Contains(out, "Overview") {
 		t.Fatalf("expected Overview tab in view: %s", out)

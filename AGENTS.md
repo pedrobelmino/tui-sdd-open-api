@@ -1,12 +1,12 @@
-# AGENTS.md — tui-sdd-llm-local
+# AGENTS.md — tui-sdd-open-api
 
 Guia para agentes de IA trabalhando neste repositório.
 
 ## O que é este projeto
 
-**tui-sdd-llm-local** é uma CLI Go com dashboard TUI (Bubble Tea) para spec-driven development usando Ollama local. O binário se chama **`tsll`**.
+**tui-sdd-open-api** é uma CLI Go com dashboard TUI (Bubble Tea) para spec-driven development usando Ollama local. O binário se chama **`tsll`**.
 
-- **Módulo Go:** `github.com/pedrobelmino/tui-sdd-llm-local`
+- **Módulo Go:** `github.com/pedrobelmino/tui-sdd-open-api`
 - **Entry:** `cmd/tsll/main.go` → `internal/cmd`
 - **TUI:** `internal/tui/` + `internal/tui/views/`
 - **Workflow:** `internal/workflow/` (init, specify, tasks, run)
@@ -69,4 +69,4 @@ tsll doctor
 
 ## Renomeação histórica
 
-Este projeto era **bel-cli** (`bel` / `github.com/pedro/bel-cli`). Referências antigas devem usar **tui-sdd-llm-local** / **tsll** / `~/.tsll/`.
+Este projeto era **bel-cli** (`bel` / `github.com/pedro/bel-cli`). Referências antigas devem usar **tui-sdd-open-api** / **tsll** / `~/.tsll/`.

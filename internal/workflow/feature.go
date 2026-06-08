@@ -8,13 +8,14 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/config"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/fileops"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ollama"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/project"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/prompts"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/state"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/templates"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/config"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/openapi"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/fileops"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/project"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/prompts"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/state"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/templates"
 )
 
 // Service runs tsll feature workflows (specify, tasks, run).
@@ -32,22 +33,39 @@ type featureContext struct {
 	ProjectStack string
 }
 
-// New creates a workflow service with config defaults.
+// New creates a workflow service from the current config.
+// Provider is selected by config.Provider: "ollama" (default) or "openapi".
 func New() *Service {
 	cfg := config.Load()
-	return &Service{
-		cfg:    cfg,
-		client: ollama.NewGenerateClient(cfg.OllamaHost).(ollama.GenerateClientWithTools),
-	}
+	return newFromConfig(cfg)
 }
 
-// Reachable reports if Ollama is up.
+// NewWithClient creates a workflow service with an externally-provided client.
+func NewWithClient(cfg config.Config, client ollama.GenerateClientWithTools) *Service {
+	return &Service{cfg: cfg, client: client}
+}
+
+func newFromConfig(cfg config.Config) *Service {
+	var client ollama.GenerateClientWithTools
+	switch cfg.Provider {
+	case "openapi":
+		client = openapi.NewClient(cfg.APIKey, cfg.APIHost, cfg.Model)
+	default:
+		client = ollama.NewGenerateClient(cfg.OllamaHost).(ollama.GenerateClientWithTools)
+	}
+	return &Service{cfg: cfg, client: client}
+}
+
+// Reachable reports if the LLM backend is reachable.
 func (s *Service) Reachable(ctx context.Context) bool {
 	return s.client.Reachable(ctx)
 }
 
-// Model returns configured model name.
+// Model returns the configured model name.
 func (s *Service) Model() string { return s.cfg.Model }
+
+// Provider returns the LLM backend name ("ollama" or "deepseek").
+func (s *Service) Provider() string { return s.cfg.Provider }
 
 func (s *Service) toolCtx(ctx context.Context) context.Context {
 	return ollama.WithModel(ctx, s.cfg.Model)

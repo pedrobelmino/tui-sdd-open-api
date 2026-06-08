@@ -6,11 +6,11 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/config"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/gpu"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ollama"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/project"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/system"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/config"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/gpu"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/project"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/system"
 )
 
 var (

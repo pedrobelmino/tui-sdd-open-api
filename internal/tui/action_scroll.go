@@ -1,6 +1,6 @@
 package tui
 
-import "github.com/pedrobelmino/tui-sdd-llm-local/internal/ui"
+import "github.com/pedrobelmino/tui-sdd-open-api/internal/ui"
 
 func (m RootModel) actionPanelWidth() int {
 	w := m.width

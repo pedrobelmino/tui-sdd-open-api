@@ -8,21 +8,29 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Config holds tui-sdd-llm-local user and project settings.
+// Config holds tui-sdd-open-api user and project settings.
 type Config struct {
 	Model      string `yaml:"model"`
 	OllamaHost string `yaml:"ollama_host"`
 	GPUPrefer  string `yaml:"gpu_prefer"` // amd, nvidia, auto
 	Theme      string `yaml:"theme"`
 	FastMode   bool   `yaml:"fast_mode"`
+
+	// Provider selects the LLM backend: "ollama" (default) or "openapi".
+	// Open API requires APIKey or TSLL_API_KEY env.
+	Provider string `yaml:"provider,omitempty"`
+	APIKey   string `yaml:"api_key,omitempty"`
+	APIHost  string `yaml:"api_host,omitempty"`
 }
 
 // Default returns sensible defaults.
 func Default() Config {
 	return Config{
-		Model:      "qwen2.5-coder:3b",
+		Model:      "deepseek-v4-flash",
 		OllamaHost: "http://127.0.0.1:11434",
 		GPUPrefer:  "amd",
+		Provider:   "openapi",
+		APIHost:    "https://api.deepseek.com",
 		Theme:      "k9s",
 		FastMode:   true,
 	}
@@ -42,6 +50,15 @@ func Load() Config {
 	}
 	if v := os.Getenv("TSLL_MODEL"); v != "" {
 		cfg.Model = v
+	}
+	if v := os.Getenv("TSLL_PROVIDER"); v != "" {
+		cfg.Provider = v
+	}
+	if v := os.Getenv("TSLL_API_KEY"); v != "" {
+		cfg.APIKey = v
+	}
+	if v := os.Getenv("TSLL_API_HOST"); v != "" {
+		cfg.APIHost = v
 	}
 	if v := os.Getenv("TSLL_FAST"); v != "" {
 		if parsed, err := strconv.ParseBool(v); err == nil {

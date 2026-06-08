@@ -82,7 +82,7 @@
 ## M4 — Polish & Integration — IN PROGRESS
 
 **Goal:** Experiência refinada, monitoramento completo e aderência à skill tlc-spec-driven
-**Target:** tui-sdd-llm-local é a interface natural para spec-driven no terminal
+**Target:** tui-sdd-open-api é a interface natural para spec-driven no terminal
 
 ### Features
 

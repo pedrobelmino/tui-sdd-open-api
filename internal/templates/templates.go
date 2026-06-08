@@ -26,7 +26,7 @@ func NewProject(name, vision, target, solves, stack, scopeIn, scopeOut string) P
 ## Goals
 
 - [ ] Deliver v1 capabilities defined below
-- [ ] Maintain spec-driven traceability via tui-sdd-llm-local
+- [ ] Maintain spec-driven traceability via tui-sdd-open-api
 
 ## Tech Stack
 
@@ -58,7 +58,7 @@ func NewProject(name, vision, target, solves, stack, scopeIn, scopeOut string) P
 
 ## M1 — Foundation
 
-**Goal:** Project initialized with tui-sdd-llm-local workflow
+**Goal:** Project initialized with tui-sdd-open-api workflow
 **Target:** %s
 
 ### Features
@@ -78,7 +78,7 @@ func NewProject(name, vision, target, solves, stack, scopeIn, scopeOut string) P
 
 ### AD-001: Project initialized via tsll init (%s)
 
-**Decision:** Bootstrap .specs/project/ with tui-sdd-llm-local
+**Decision:** Bootstrap .specs/project/ with tui-sdd-open-api
 **Reason:** Start spec-driven workflow
 **Trade-off:** —
 **Impact:** Ready for tsll specify / tsll tasks / tsll run

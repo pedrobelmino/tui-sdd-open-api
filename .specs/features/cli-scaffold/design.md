@@ -7,7 +7,7 @@
 
 ## Architecture Overview
 
-O tui-sdd-llm-local opera em **dois modos** que compartilham pacotes internos mas não se misturam em runtime:
+O tui-sdd-open-api opera em **dois modos** que compartilham pacotes internos mas não se misturam em runtime:
 
 | Modo | Trigger | Runtime |
 | ---- | ------- | ------- |
@@ -125,7 +125,7 @@ sequenceDiagram
 ## Package Structure
 
 ```
-tui-sdd-llm-local/
+tui-sdd-open-api/
 ├── cmd/tsll/
 │   └── main.go                 # entry; chama cmd.Execute()
 ├── internal/
@@ -596,7 +596,7 @@ TUI root model: test `Update` com mensagens injetadas — sem `tea.NewProgram` e
 
 | Decision | Choice | Rationale |
 | -------- | ------ | --------- |
-| Module path | `github.com/pedrobelmino/tui-sdd-llm-local` | Convenção; ajustar ao remote real |
+| Module path | `github.com/pedrobelmino/tui-sdd-open-api` | Convenção; ajustar ao remote real |
 | Go version | 1.22+ | Toolchain estável |
 | Bubble Tea alt-screen | `tea.WithAltScreen()` | k9s-like full terminal; restore on quit |
 | Child models | View renderers como funções puras, não sub-models | Menos boilerplate no scaffold; bubbles/table local |
@@ -636,7 +636,7 @@ TUI root model: test `Update` com mensagens injetadas — sem `tea.NewProgram` e
 
 | # | Question | Default if unanswered |
 | - | -------- | --------------------- |
-| 1 | Module path GitHub exato? | `github.com/pedrobelmino/tui-sdd-llm-local` |
+| 1 | Module path GitHub exato? | `github.com/pedrobelmino/tui-sdd-open-api` |
 | 2 | GPU tick sempre ou só na view Metrics? | Sempre (2s) — custo baixo |
 | 3 | Mini GPU no header em todas views? | Sim — 1 linha util% + VRAM |
 

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ollama"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/project"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/prompts"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/state"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/templates"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/project"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/prompts"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/state"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/templates"
 	"github.com/spf13/cobra"
 )
 

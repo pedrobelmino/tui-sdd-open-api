@@ -11,10 +11,11 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ollama"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/project"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ui"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/workflow"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/config"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/project"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ui"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/workflow"
 )
 
 func (m RootModel) handleInteractiveKey(msg tea.KeyMsg) (RootModel, tea.Cmd) {
@@ -308,6 +309,53 @@ func (m RootModel) submitForm() (RootModel, tea.Cmd) {
 		m.formKind = FormNone
 		prompt := "Model asked:\n" + m.actionQuestion + "\n\nUser answer:\n" + answer + "\n\nContinue with the implementation/workflow now."
 		return m.startAction(ActionQuickTask, m.selectedFeature, "", "", prompt)
+
+	case FormAPIKey:
+		key := strings.TrimSpace(m.textInput.Value())
+		if key == "" {
+			m.statusMsg = "Open API key required"
+			return m, nil
+		}
+		m.apiKeyTemp = key
+		m.textInput.EchoMode = textinput.EchoNormal
+		return m.openFormWithReturn(FormAPIPersist, m.formReturnScreen), nil
+
+	case FormAPIPersist:
+		choice := strings.ToLower(strings.TrimSpace(m.textInput.Value()))
+		if choice != "s" && choice != "p" {
+			m.statusMsg = "type s (session only) or p (persist to config)"
+			return m, nil
+		}
+		m.cfg.APIKey = m.apiKeyTemp
+		os.Setenv("TSLL_API_KEY", m.apiKeyTemp)
+
+		if choice == "p" {
+			if err := config.Save(m.cfg); err != nil {
+				m.statusMsg = "failed to save config: " + err.Error()
+			} else {
+				m.statusMsg = "API key saved to ~/.tsll/config.yaml"
+			}
+		} else {
+			m.statusMsg = "API key configured for this session only"
+		}
+		m.apiKeyTemp = ""
+		return m.openFormWithReturn(FormAPIModel, m.formReturnScreen), nil
+
+	case FormAPIModel:
+		model := strings.TrimSpace(m.textInput.Value())
+		switch model {
+		case "1":
+			m.cfg.Model = "deepseek-v4-flash"
+		case "2":
+			m.cfg.Model = "deepseek-v4-pro"
+		default:
+			m.statusMsg = "type 1 for deepseek-v4-flash or 2 for deepseek-v4-pro"
+			return m, nil
+		}
+		m.screen = ScreenDashboard
+		m.formKind = FormNone
+		m.statusMsg = "Using model: " + m.cfg.Model
+		return m, nil
 	}
 	return m, nil
 }
@@ -358,6 +406,27 @@ func (m RootModel) openFormWithReturn(kind FormKind, returnScreen Screen) RootMo
 		m.textArea.Focus()
 		m.textArea.SetValue("")
 		m.textArea.Placeholder = "Answer model question..."
+	case FormAPIKey:
+		m.textInput.Focus()
+		m.textInput.SetValue("")
+		m.textInput.Placeholder = "sk-..."
+		m.textInput.CharLimit = 128
+		m.textInput.Width = 48
+		m.textInput.EchoMode = textinput.EchoPassword
+	case FormAPIPersist:
+		m.textInput.Focus()
+		m.textInput.SetValue("")
+		m.textInput.Placeholder = "s (session only) / p (save to config)"
+		m.textInput.CharLimit = 1
+		m.textInput.Width = 4
+		m.textInput.EchoMode = textinput.EchoNormal
+	case FormAPIModel:
+		m.textInput.Focus()
+		m.textInput.SetValue("")
+		m.textInput.Placeholder = "1 or 2"
+		m.textInput.CharLimit = 1
+		m.textInput.Width = 4
+		m.textInput.EchoMode = textinput.EchoNormal
 	}
 	return m
 }
@@ -530,8 +599,26 @@ func (m RootModel) renderForm(width, height int) string {
 	case FormActionReply:
 		title = "Reply to model"
 		body = m.textArea.View()
+	case FormAPIKey:
+		title = "Open API key"
+		body = m.textInput.View()
+	case FormAPIPersist:
+		title = "Persist API key?"
+		body = "Key: " + maskKey(m.cfg.APIKey) + "\n\n" + m.textInput.View()
+	case FormAPIModel:
+		title = "Choose model"
+		body = "1 - deepseek-v4-flash\n2 - deepseek-v4-pro\n\n" + m.textInput.View()
 	}
 	help := "enter: submit  esc: cancel"
+	if m.formKind == FormAPIKey {
+		help = "enter: confirm  esc: cancel"
+	}
+	if m.formKind == FormAPIPersist {
+		help = "s: session only │ p: save to ~/.tsll/config.yaml"
+	}
+	if m.formKind == FormAPIModel {
+		help = "1: deepseek-v4-flash │ 2: deepseek-v4-pro"
+	}
 	return ui.Panel(title, body+"\n\n"+help, width-4, height)
 }
 
@@ -674,4 +761,11 @@ func newTextArea() textarea.Model {
 	ta.SetWidth(60)
 	ta.ShowLineNumbers = false
 	return ta
+}
+
+func maskKey(key string) string {
+	if len(key) <= 8 {
+		return strings.Repeat("*", len(key))
+	}
+	return key[:4] + strings.Repeat("*", len(key)-8) + key[len(key)-4:]
 }

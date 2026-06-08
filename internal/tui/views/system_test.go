@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/system"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/system"
 )
 
 func TestRenderSystem_Unavailable(t *testing.T) {

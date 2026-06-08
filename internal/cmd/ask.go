@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/project"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/workflow"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/project"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/workflow"
 	"github.com/spf13/cobra"
 )
 

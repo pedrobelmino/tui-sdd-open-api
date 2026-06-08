@@ -41,7 +41,7 @@ Examples: `interactive.go`, `brownfield-mapping.md` (specs only), `amdgpu.go`
 2. Blank line
 3. Third-party (`cobra`, `bubbletea`, `lipgloss`)
 4. Blank line
-5. Internal (`github.com/pedrobelmino/tui-sdd-llm-local/internal/...`)
+5. Internal (`github.com/pedrobelmino/tui-sdd-open-api/internal/...`)
 
 Example from `internal/cmd/specify.go`:
 
@@ -51,7 +51,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ollama"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
 	...
 	"github.com/spf13/cobra"
 )

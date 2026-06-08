@@ -22,6 +22,9 @@ const (
 	FormQuickTask
 	FormAsk
 	FormActionReply
+	FormAPIKey
+	FormAPIPersist
+	FormAPIModel
 )
 
 // ActionKind identifies a running workflow action.

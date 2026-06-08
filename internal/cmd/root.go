@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/mattn/go-isatty"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/tui"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ui"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/tui"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ui"
 	"github.com/spf13/cobra"
 )
 

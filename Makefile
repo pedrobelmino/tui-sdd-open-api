@@ -1,5 +1,5 @@
 VERSION ?= 0.1.0-dev
-MODULE  := github.com/pedrobelmino/tui-sdd-llm-local
+MODULE  := github.com/pedrobelmino/tui-sdd-open-api
 BINARY  := bin/tsll
 LDFLAGS := -ldflags "-X $(MODULE)/internal/cmd.version=$(VERSION)"
 

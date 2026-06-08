@@ -10,14 +10,14 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/config"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/gpu"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ollama"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/project"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/system"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/tokens"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/tui/views"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ui"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/config"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/gpu"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/project"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/system"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/tokens"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/tui/views"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ui"
 )
 
 var spinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
@@ -88,6 +88,8 @@ type RootModel struct {
 	actionReturnScreen Screen
 	actionSpinner      int // index into spinnerFrames
 
+	apiKeyTemp string // holds key while user chooses session/persist
+
 	ollama  ollama.Snapshot
 	gpu     gpu.Snapshot
 	system  system.Snapshot
@@ -104,7 +106,9 @@ type RootModel struct {
 func NewRootModel(version string) RootModel {
 	ti := newTextInput()
 	ta := newTextArea()
-	return RootModel{
+	cfg := config.Load()
+
+	m := RootModel{
 		screen:     ScreenDashboard,
 		activeView: ViewOverview,
 		keymap:     DefaultKeyMap(),
@@ -117,12 +121,30 @@ func NewRootModel(version string) RootModel {
 			"system":  true,
 		},
 		version: version,
-		cfg:     config.Load(),
+		cfg:     cfg,
 	}
+
+	// If provider is openapi and no key set yet, prompt on startup.
+	if cfg.Provider == "openapi" && cfg.APIKey == "" {
+		m.screen = ScreenForm
+		m.formKind = FormAPIKey
+		m.textInput.Focus()
+		m.textInput.SetValue("")
+		m.textInput.Placeholder = "sk-..."
+		m.textInput.CharLimit = 128
+		m.textInput.Width = 48
+		m.textInput.EchoMode = textinput.EchoPassword
+	}
+
+	return m
 }
 
 // Init loads project, Ollama, GPU, system and starts ticks.
 func (m RootModel) Init() tea.Cmd {
+	// Defer backend checks until after the API key prompt, if needed.
+	if m.formKind == FormAPIKey || m.formKind == FormAPIPersist || m.formKind == FormAPIModel {
+		return nil
+	}
 	return tea.Batch(
 		loadProjectCmd(),
 		fetchOllamaCmd(),
@@ -219,7 +241,10 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case OllamaSnapshotMsg:
 		m.ollama = msg.Snapshot
 		m.loading["ollama"] = false
-		if !msg.Snapshot.Reachable {
+		if m.cfg.Provider == "openapi" {
+			// Open API doesn't use Ollama; silence unreachable banner.
+			m.errBanner = ""
+		} else if !msg.Snapshot.Reachable {
 			m.errBanner = "Ollama unreachable"
 		} else {
 			m.errBanner = ""
@@ -393,7 +418,9 @@ func (m RootModel) headerTitle() string {
 		proj = projectBasename(m.project.Root)
 	}
 	model := m.cfg.Model
-	if len(m.ollama.Running) > 0 {
+	if m.cfg.Provider == "openapi" {
+		model = "openapi (" + m.cfg.Model + ")"
+	} else if len(m.ollama.Running) > 0 {
 		model = m.ollama.Running[0].Name
 	}
 	title := fmt.Sprintf("tsll %s ── %s ── %s", m.version, proj, model)
@@ -445,6 +472,16 @@ func (m RootModel) renderBody(width, height int) string {
 			Width: width, Height: height, Features: m.features, Cursor: m.featureCursor,
 		})
 	case ViewModels:
+		if m.cfg.Provider == "openapi" {
+			return views.RenderModels(views.ModelsData{
+				Width: width, Height: height,
+				Tags:                []ollama.TagModel{{Name: m.cfg.Model}},
+				Running:             nil,
+				Reachable:           m.cfg.APIKey != "",
+				ModelMissing:        false,
+				ConfiguredModel:	m.cfg.Model,
+			})
+		}
 		return views.RenderModels(views.ModelsData{
 			Width: width, Height: height,
 			Tags: m.ollama.Tags, Running: m.ollama.Running,

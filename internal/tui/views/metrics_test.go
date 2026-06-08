@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/gpu"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/tokens"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/gpu"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/tokens"
 )
 
 const testMetricsWidth = 80

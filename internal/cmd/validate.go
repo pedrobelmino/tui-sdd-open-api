@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/project"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/project"
 	"github.com/spf13/cobra"
 )
 

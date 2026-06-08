@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/gpu"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/tokens"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ui"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/gpu"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/tokens"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ui"
 )
 
 const (

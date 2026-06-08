@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/config"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ollama"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/config"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
 )
 
 func loadCfg() config.Config {

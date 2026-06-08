@@ -1,10 +1,10 @@
-# tui-sdd-llm-local
+# tui-sdd-open-api
 
 **Vision:** Uma CLI interativa estilo k9s que guia devs solo na construção de software com spec-driven development, exibindo em tempo real estatísticas de tokens, uso do modelo local (Ollama) e GPU — tudo em um dashboard de terminal full-screen.
 
 **For:** Desenvolvedores solo que querem estrutura, visibilidade de recursos e consistência ao construir software com IA local.
 
-**Solves:** Desenvolvimento assistido por IA costuma ser ad hoc — sem specs rastreáveis, sem memória entre sessões, sem visão do consumo de tokens/GPU, e sem fluxo claro do requisito à implementação. O tui-sdd-llm-local formaliza esse ciclo numa interface interativa, sem dependência de APIs na nuvem.
+**Solves:** Desenvolvimento assistido por IA costuma ser ad hoc — sem specs rastreáveis, sem memória entre sessões, sem visão do consumo de tokens/GPU, e sem fluxo claro do requisito à implementação. O tui-sdd-open-api formaliza esse ciclo numa interface interativa, sem dependência de APIs na nuvem.
 
 ## Goals
 
@@ -54,7 +54,7 @@
 - Orquestração multi-agente paralela
 - Hospedagem, deploy ou CI/CD
 - Suporte a times/colaboração multi-usuário
-- Substituição completa do Cursor IDE — tui-sdd-llm-local complementa, não substitui
+- Substituição completa do Cursor IDE — tui-sdd-open-api complementa, não substitui
 - Suporte a macOS ou Windows
 - Métricas Intel GPU (apenas NVIDIA e AMD/Radeon na v1)
 

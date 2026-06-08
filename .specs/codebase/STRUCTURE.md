@@ -1,11 +1,11 @@
 # Project Structure
 
-**Root:** `/home/pedro/dev/cursor/tui-sdd-llm-local`
+**Root:** `/home/pedro/dev/cursor/tui-sdd-open-api`
 
 ## Directory Tree
 
 ```
-tui-sdd-llm-local/
+tui-sdd-open-api/
 ├── cmd/tsll/                 # Entry point
 ├── internal/
 │   ├── cmd/                 # Cobra commands

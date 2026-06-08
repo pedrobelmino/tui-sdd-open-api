@@ -1,11 +1,11 @@
 package tui
 
 import (
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/gpu"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/ollama"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/project"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/system"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/tokens"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/gpu"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/ollama"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/project"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/system"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/tokens"
 )
 
 // OllamaSnapshotMsg delivers fetched Ollama state into the TUI loop.

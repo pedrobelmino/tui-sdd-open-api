@@ -20,10 +20,10 @@ func testTabs() []Tab {
 
 func TestHeader_Snapshot80Cols(t *testing.T) {
 	t.Setenv("NO_COLOR", "1")
-	got := Header("tsll v0.1.0 ── tui-sdd-llm-local ── qwen2.5-coder", testTabs(), 0, testWidth)
+	got := Header("tsll v0.1.0 ── tui-sdd-open-api ── qwen2.5-coder", testTabs(), 0, testWidth)
 
 	want := strings.Join([]string{
-		"┌─ tsll v0.1.0 ── tui-sdd-llm-local ── qwen2.5-coder ──────────────────────────┐",
+		"┌─ tsll v0.1.0 ── tui-sdd-open-api ── qwen2.5-coder ───────────────────────────┐",
 		"│ [1] Overview  [2] Features  [3] Models  [4] Metrics                          │",
 	}, "\n")
 

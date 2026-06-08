@@ -7,9 +7,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/config"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/project"
-	"github.com/pedrobelmino/tui-sdd-llm-local/internal/templates"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/config"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/project"
+	"github.com/pedrobelmino/tui-sdd-open-api/internal/templates"
 )
 
 // InitParams holds arguments for project bootstrap.
@@ -47,7 +47,7 @@ func InitProject(p InitParams) error {
 		name = filepath.Base(root)
 	}
 	if vision == "" {
-		vision = "A tui-sdd-llm-local managed project"
+		vision = "A tui-sdd-open-api managed project"
 	}
 
 	target := defaultIfEmpty(p.Target, "dev solo")
