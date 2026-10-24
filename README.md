@@ -416,3 +416,7 @@ Issues e PRs são bem-vindos. Antes de abrir um PR:
   <strong>Feito para devs solo que querem estrutura, visibilidade e liberdade de escolha de modelo.</strong><br>
   <code>sdd-open-api</code> — do spec ao código, no terminal.
 </p>
+
+## Licença
+
+MIT — veja [LICENSE](LICENSE).
